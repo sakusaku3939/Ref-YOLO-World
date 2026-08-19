@@ -1,0 +1,19 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Datasets, weights and run artifacts are distributed outside the repository.
+data/
+weights/
+work_dirs/
+results/
+demo_outputs/
+*.pth
+*.onnx
+*.tflite
+
+.DS_Store
+.idea/
+.vscode/

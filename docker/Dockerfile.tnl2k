@@ -1,0 +1,6 @@
+# The official TNL2K evaluation script is MATLAB code executed with Octave.
+FROM ref-yolo-world:latest
+
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends octave \
+    && rm -rf /var/lib/apt/lists/*

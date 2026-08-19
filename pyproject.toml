@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools", "wheel", "torch"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ref_yolo_world"
+version = "1.0.0"
+description = "Ref-YOLO-World: real-time referring expression comprehension built on YOLO-World"
+readme = "README.md"
+keywords = ["referring expression comprehension", "object detection"]
+license = { text = "GPL-3.0-or-later" }
+
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+requires-python = ">= 3.8"
+
+dependencies = [
+    "wheel",
+    "torch==2.1.2",
+    "torchvision==0.16.2",
+    "transformers==4.51.3",
+    "tokenizers",
+    "numpy==1.23.5",
+    "opencv-python==4.9.0.80",
+    "supervision",
+    "openmim",
+    "mmcv==2.1.0",
+    "mmdet>=3.0.0",
+    "mmengine==0.10.4",
+    "mmyolo",
+    "timm==0.6.13",
+    "albumentations",
+]
+
+[tool.setuptools]
+include-package-data = false
+license-files = ["LICENSE"]
+zip-safe = true
+
+[tool.setuptools.packages.find]
+include = ["ref_yolo_world*", "yolo_world*"]
+exclude = ["docs*", "tests*", "third_party*", "tools*", "demo*", "configs*"]
