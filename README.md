@@ -19,8 +19,8 @@ Quick evaluation of the released checkpoint:
 
 ```bash
 CUDA_VISIBLE_DEVICES=0,1 ./tools/dist_test.sh \
-  configs/ref_yolo_world/ref_yolo_world_multidataset_text_lora.py \
-  weights/ref_yolo_world_x_multidataset_text_lora.pth \
+  configs/ref_yolo_world/ref_yolo_world_multidataset.py \
+  weights/ref_yolo_world_x_multidataset.pth \
   2
 ```
 
@@ -28,8 +28,8 @@ Single-image demo:
 
 ```bash
 python3 demo/ref_demo.py \
-  --config configs/ref_yolo_world/ref_yolo_world_multidataset_text_lora.py \
-  --checkpoint weights/ref_yolo_world_x_multidataset_text_lora.pth \
+  --config configs/ref_yolo_world/ref_yolo_world_multidataset.py \
+  --checkpoint weights/ref_yolo_world_x_multidataset.pth \
   --image demo/sample_images/bus.jpg \
   --text "the person on the left"
 ```
@@ -43,8 +43,8 @@ this repository because of their size. Download them into `weights/` and
 | File | Description |
 | --- | --- |
 | `yolo_world_v2_x_obj365v1_goldg_cc3mlite_pretrain_1280ft-14996a36.pth` | YOLO-World v2-X pretrained weights, the starting point of every training run. |
-| `ref_yolo_world_x_multidataset_text_lora.pth` | Released Ref-YOLO-World model (RefCOCOg val 81.62 %). |
-| `refcocog_val_text_lora_features.pt` | Text-feature cache for the cached inference path. |
+| `ref_yolo_world_x_multidataset.pth` | Released Ref-YOLO-World model (RefCOCOg val 81.62 %). |
+| `refcocog_val_text_features.pt` | Text-feature cache for the cached inference path. |
 
 ## Acknowledgement
 

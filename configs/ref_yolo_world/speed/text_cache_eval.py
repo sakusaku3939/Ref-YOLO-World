@@ -2,9 +2,9 @@
 # Uses the Ref-YOLO-World (text LoRA) text-LoRA baseline and replaces only the CLIP text encoder
 # inference call with precomputed text-side features.
 
-_base_ = '../ref_yolo_world_multidataset_text_lora.py'
+_base_ = '../ref_yolo_world_multidataset.py'
 
-text_cache_path = 'results/text_cache/refcocog_val_text_lora_features.pt'
+text_cache_path = 'results/text_cache/refcocog_val_text_features.pt'
 work_dir = './work_dirs/yolo_world_v2_x_finetune_refcocog_text_cache_eval'
 
 model = dict(

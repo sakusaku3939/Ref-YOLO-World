@@ -5,7 +5,7 @@
 # text backbone is swapped from LoRA to non-LoRA because the adapter weights are
 # already merged into the checkpoint produced by tools/convert/merge_text_lora.py.
 
-_base_ = '../ref_yolo_world_multidataset_text_lora.py'
+_base_ = '../ref_yolo_world_multidataset.py'
 
 work_dir = './work_dirs/yolo_world_v2_x_finetune_refcocog_text_reparam_cache_low_margin_fp32_lora_merged_eval'
 

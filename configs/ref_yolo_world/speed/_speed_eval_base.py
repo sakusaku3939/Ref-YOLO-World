@@ -2,7 +2,7 @@
 
 _base_ = '../ref_yolo_world_multidataset.py'
 
-text_cache_path = 'results/text_cache/refcocog_val_text_lora_features.pt'
+text_cache_path = 'results/text_cache/refcocog_val_text_features.pt'
 
 test_pipeline = [
     *_base_.test_pipeline[:-1],

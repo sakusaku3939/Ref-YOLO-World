@@ -11,7 +11,7 @@ weights (20 epochs, best checkpoint at epoch 10):
 
 ```bash
 CUDA_VISIBLE_DEVICES=0,1 ./tools/dist_train.sh \
-  configs/ref_yolo_world/ref_yolo_world_multidataset_text_lora.py \
+  configs/ref_yolo_world/ref_yolo_world_multidataset.py \
   2 --amp \
   --cfg-options load_from=weights/yolo_world_v2_x_obj365v1_goldg_cc3mlite_pretrain_1280ft-14996a36.pth
 ```
@@ -25,8 +25,8 @@ module ablation of the method:
 | `configs/ref_yolo_world/ref_t_csp.py` | ✓ | – | – | – | RefCOCOg |
 | `configs/ref_yolo_world/ref_t_csp_spatial_pe.py` | ✓ | ✓ | – | – | RefCOCOg |
 | `configs/ref_yolo_world/ref_yolo_world_refcocog.py` | ✓ | ✓ | ✓ | – | RefCOCOg |
-| `configs/ref_yolo_world/ref_yolo_world_multidataset.py` | ✓ | ✓ | ✓ | – | RefCOCO/+/g + flip sync |
-| `configs/ref_yolo_world/ref_yolo_world_multidataset_text_lora.py` | ✓ | ✓ | ✓ | ✓ | RefCOCO/+/g + flip sync |
+| `configs/ref_yolo_world/ref_yolo_world_multidataset_no_lora.py` | ✓ | ✓ | ✓ | – | RefCOCO/+/g + flip sync |
+| `configs/ref_yolo_world/ref_yolo_world_multidataset.py` | ✓ | ✓ | ✓ | ✓ | RefCOCO/+/g + flip sync |
 
 ## Accuracy
 
@@ -34,8 +34,8 @@ module ablation of the method:
 
 ```bash
 CUDA_VISIBLE_DEVICES=0,1 ./tools/dist_test.sh \
-  configs/ref_yolo_world/ref_yolo_world_multidataset_text_lora.py \
-  weights/ref_yolo_world_x_multidataset_text_lora.pth \
+  configs/ref_yolo_world/ref_yolo_world_multidataset.py \
+  weights/ref_yolo_world_x_multidataset.pth \
   2
 ```
 
@@ -49,8 +49,8 @@ checkpoint; the two numbers differ only in the denominator.
 
 ```bash
 python3 tools/eval/refcoco_suite_benchmark.py \
-  --config configs/ref_yolo_world/ref_yolo_world_multidataset_text_lora.py \
-  --checkpoint weights/ref_yolo_world_x_multidataset_text_lora.pth \
+  --config configs/ref_yolo_world/ref_yolo_world_multidataset.py \
+  --checkpoint weights/ref_yolo_world_x_multidataset.pth \
   --gpus 2 \
   --output-dir results/refcoco_suite_accuracy
 ```
@@ -71,8 +71,8 @@ python3 tools/eval/refcocog_slice_eval.py \
 
 ```bash
 CUDA_VISIBLE_DEVICES=0 python3 tools/test.py \
-  configs/ref_yolo_world/ref_yolo_world_multidataset_text_lora.py \
-  weights/ref_yolo_world_x_multidataset_text_lora.pth \
+  configs/ref_yolo_world/ref_yolo_world_multidataset.py \
+  weights/ref_yolo_world_x_multidataset.pth \
   --cfg-options \
     test_dataloader.dataset.ann_file=ref_adv/ref_adv_s.json \
     test_evaluator.ann_file=data/ref_adv/ref_adv_s.json
@@ -83,7 +83,7 @@ CUDA_VISIBLE_DEVICES=0 python3 tools/test.py \
 ```bash
 CUDA_VISIBLE_DEVICES=0,1 ./tools/dist_test.sh \
   configs/ref_yolo_world/eval/lvis_minival.py \
-  weights/ref_yolo_world_x_multidataset_text_lora.pth \
+  weights/ref_yolo_world_x_multidataset.pth \
   2
 ```
 
@@ -116,7 +116,7 @@ Measure one condition:
 python3 tools/speed/reliable_speed_measure.py \
   --label text_cache_attention_reparameterization_cached \
   --config configs/ref_yolo_world/speed/text_cache_attention_reparameterization_cached.py \
-  --checkpoint weights/ref_yolo_world_x_multidataset_text_lora.pth \
+  --checkpoint weights/ref_yolo_world_x_multidataset.pth \
   --ann-file data/refcoco/refcocog/validation.json \
   --output results/speed/text_cache_attention_reparameterization_cached.json
 ```
@@ -130,11 +130,11 @@ Per-stage breakdown (backbone / neck / head / text encoder):
 ```bash
 python3 tools/speed/stage_speed_breakdown.py \
   --ref-config configs/ref_yolo_world/speed/text_cache_attention_reparameterization_cached.py \
-  --ref-checkpoint weights/ref_yolo_world_x_multidataset_text_lora.pth \
+  --ref-checkpoint weights/ref_yolo_world_x_multidataset.pth \
   --output-dir results/speed/stage_breakdown
 
 python3 tools/speed/measure_ref_yoloworld_params.py \
-  --config configs/ref_yolo_world/ref_yolo_world_multidataset_text_lora.py \
+  --config configs/ref_yolo_world/ref_yolo_world_multidataset.py \
   --output results/speed/params.json
 ```
 
@@ -146,7 +146,7 @@ attention. The following two checks assert that it does not change the logits:
 ```bash
 python3 tools/eval/attention_reparameterization_equivalence.py \
   --config configs/ref_yolo_world/speed/attention_reparameterization_eval.py \
-  --checkpoint weights/ref_yolo_world_x_multidataset_text_lora.pth \
+  --checkpoint weights/ref_yolo_world_x_multidataset.pth \
   --ann-file data/refcoco/refcocog/validation.json \
   --output results/attention_reparameterization_equivalence.json
 
@@ -162,12 +162,12 @@ python3 tools/eval/reparam_cache_equivalence.py \
 ```bash
 python3 tools/export/export_ref_yoloworld_text_cache_onnx.py \
   configs/ref_yolo_world/speed/text_cache_attention_reparameterization_cached.py \
-  weights/ref_yolo_world_x_multidataset_text_lora.pth \
+  weights/ref_yolo_world_x_multidataset.pth \
   --output work_dirs/export/ref_yolo_world.onnx
 
 python3 tools/export/eval_ref_yoloworld_onnx_bbox_acc.py \
   configs/ref_yolo_world/speed/text_cache_attention_reparameterization_cached.py \
-  weights/ref_yolo_world_x_multidataset_text_lora.pth \
+  weights/ref_yolo_world_x_multidataset.pth \
   --onnx work_dirs/export/ref_yolo_world.onnx \
   --ann-file data/refcoco/refcocog/validation.json
 ```

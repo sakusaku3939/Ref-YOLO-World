@@ -15,9 +15,9 @@ data/
   coco/lvis/lvis_v1_minival_inserted_image_name.json
 weights/
   yolo_world_v2_x_obj365v1_goldg_cc3mlite_pretrain_1280ft-14996a36.pth
-  ref_yolo_world_x_multidataset_text_lora.pth
+  ref_yolo_world_x_multidataset.pth
 results/text_cache/
-  refcocog_val_text_lora_features.pt
+  refcocog_val_text_features.pt
 ```
 
 ## COCO images
@@ -86,7 +86,7 @@ Ref-YOLO-World parameter layout first:
 ```bash
 python3 tools/convert/convert_yolo_to_ref_checkpoint.py \
   --source weights/yolo_world_v2_x_obj365v1_goldg_cc3mlite_pretrain_1280ft-14996a36.pth \
-  --template configs/ref_yolo_world/ref_yolo_world_multidataset_text_lora.py \
+  --template configs/ref_yolo_world/ref_yolo_world_multidataset.py \
   --output weights/ref_yolo_world_x_init.pth
 ```
 
@@ -98,9 +98,9 @@ expression:
 ```bash
 python3 tools/convert/build_text_feature_cache.py \
   --ann-file data/refcoco/refcocog/validation.json \
-  --model-config configs/ref_yolo_world/ref_yolo_world_multidataset_text_lora.py \
-  --checkpoint weights/ref_yolo_world_x_multidataset_text_lora.pth \
-  --output results/text_cache/refcocog_val_text_lora_features.pt \
+  --model-config configs/ref_yolo_world/ref_yolo_world_multidataset.py \
+  --checkpoint weights/ref_yolo_world_x_multidataset.pth \
+  --output results/text_cache/refcocog_val_text_features.pt \
   --save-dtype float16
 ```
 
@@ -109,8 +109,8 @@ layers first and cache the features of the merged encoder:
 
 ```bash
 python3 tools/convert/merge_text_lora.py \
-  --config configs/ref_yolo_world/ref_yolo_world_multidataset_text_lora.py \
-  --checkpoint weights/ref_yolo_world_x_multidataset_text_lora.pth \
+  --config configs/ref_yolo_world/ref_yolo_world_multidataset.py \
+  --checkpoint weights/ref_yolo_world_x_multidataset.pth \
   --ann-file data/refcoco/refcocog/validation.json \
   --output-checkpoint weights/ref_yolo_world_x_lora_merged.pth \
   --output-json results/lora_merge/merge_report.json

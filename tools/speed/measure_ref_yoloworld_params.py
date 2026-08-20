@@ -21,11 +21,10 @@ from mmyolo.utils import register_all_modules
 
 
 DEFAULT_CONFIG = (
-    "configs/sparse_multibox/"
-    "yolo_world_v2_x_finetune_refcocog_lora_text_fixed_eval.py"
+    "configs/ref_yolo_world/ref_yolo_world_multidataset.py"
 )
 DEFAULT_TEXT_CACHE = (
-    "results/text_cache/refcocog_val_text_lora_features.pt"
+    "results/text_cache/refcocog_val_text_features.pt"
 )
 
 

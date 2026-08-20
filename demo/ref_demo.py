@@ -6,8 +6,8 @@
 
 実行例:
   PYTHONPATH=. python demo/ref_demo.py \\
-    --config configs/ref_yolo_world/ref_yolo_world_refcocog.py \\
-    --checkpoint weights/ref_yolo_world_x_multidataset_text_lora.pth \\
+    --config configs/ref_yolo_world/ref_yolo_world_multidataset.py \\
+    --checkpoint weights/ref_yolo_world_x_multidataset.pth \\
     --image demo/sample_images/bus.jpg \\
     --text "A man wearing a black coat and sunglasses" \\
     --output-dir demo_outputs
@@ -35,7 +35,7 @@ def parse_args():
     parser.add_argument(
         '--config',
         type=str,
-        default='configs/ref_yolo_world/ref_yolo_world_refcocog.py',
+        default='configs/ref_yolo_world/ref_yolo_world_multidataset.py',
         help='提案手法の config ファイルパス',
     )
     parser.add_argument(
