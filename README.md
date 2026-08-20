@@ -40,11 +40,11 @@ Model weights and the precomputed text-feature cache are distributed outside
 this repository because of their size. Download them into `weights/` and
 `results/text_cache/` respectively; see [docs/data.md](docs/data.md).
 
-| File | Description |
-| --- | --- |
-| [`yolo_world_v2_x_obj365v1_goldg_cc3mlite_pretrain_1280ft-14996a36.pth`](https://github.com/AILab-CVC/YOLO-World/blob/master/docs/yoloworld_v2_results.md#zero-shot-inference-on-lvis-dataset) | YOLO-World v2-X pretrained weights, the starting point of every training run. |
-| `ref_yolo_world_x_multidataset.pth` | Released Ref-YOLO-World model (RefCOCOg val 81.62 %). |
-| `refcocog_val_text_features.pt` | Text-feature cache for the cached inference path. |
+| File | Description | Download |
+| --- | --- | --- |
+| `yolo_world_v2_x_obj365v1_goldg_cc3mlite_pretrain_1280ft-14996a36.pth` | YOLO-World v2-X pretrained weights, the starting point of every training run. | [download link](https://huggingface.co/wondervictor/YOLO-World/resolve/main/yolo_world_v2_x_obj365v1_goldg_cc3mlite_pretrain_1280ft-14996a36.pth) |
+| `ref_yolo_world_x_multidataset.pth` | Released Ref-YOLO-World model (RefCOCOg val 81.62 %). | — |
+| `refcocog_val_text_features.pt` | Text-feature cache for the cached inference path. | — |
 
 ## Acknowledgement
 
