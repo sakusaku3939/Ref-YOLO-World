@@ -1,84 +1,68 @@
-# RefCOCO / RefCOCO+ / RefCOCOg joint training with spatial flip text sync.
-# This config is the multi-dataset + spatial-flip training path and a training base for later Ref-YOLO-World (text LoRA) speed work.
-# It keeps the model, losses, postprocess, and RefCOCOg validation path fixed,
-# while using the multi-dataset train distribution and horizontal-flip text
-# consistency that reached the past baseline 78.97% Acc@0.5 on RefCOCOg val.
+# Default Ref-YOLO-World: multi-dataset + spatial flip with CLIP text LoRA.
+# It starts from the 78.97% no-LoRA checkpoint and adds only
+# zero-init LoRA adapters to the frozen CLIP text encoder.
 
-_base_ = './ref_yolo_world_refcocog.py'
-
+_base_ = './ref_yolo_world_multidataset_no_lora.py'
 standard_evaluation_checkpoint = (
-    'weights/ref_yolo_world_x_multidataset_text_lora.pth')
-standard_training_start_checkpoint = (
-    'weights/yolo_world_v2_x_obj365v1_goldg_cc3mlite_'
-    'pretrain_1280ft-14996a36.pth')
-load_from = standard_training_start_checkpoint
-resume = False
+    'weights/ref_yolo_world_x_multidataset.pth')
 
-# The base RefCOCOg pipeline ends with RandomLoadText and PackDetInputs.
-# Insert the correction after RandomFlip has populated flip metadata and before
-# RandomLoadText flattens/pads the referring expression text slots.
-spatial_flip_train_pipeline = [
-    *_base_.train_pipeline[:-2],
-    dict(type='SpatialTextFlipCorrection'),
-    *_base_.train_pipeline[-2:],
-]
+custom_imports = dict(
+    imports=[
+        'yolo_world',
+        'yolo_world.evaluation.metrics',
+        'yolo_world.hooks.lora_sanity_hook',
+        'yolo_world.hooks.lora_sanity_hook',
+        'ref_yolo_world.modules',
+        'ref_yolo_world.models',
+        'ref_yolo_world.modules',
+        'ref_yolo_world.models',
+        'ref_yolo_world.models',
+    ],
+    allow_failed_imports=False)
 
-refcoco_train_dataset = dict(
-    type='CustomRefCOCODataset',
-    data_root='data/',
-    ann_file='refcoco/refcoco/train.json',
-    img_prefix='data/coco/train2014/',
-    filter_cfg=dict(filter_empty_gt=True, min_size=32),
-    pipeline=spatial_flip_train_pipeline)
+model = dict(
+    backbone=dict(
+        text_model=dict(
+            type='HuggingCLIPLanguageBackboneLoRA',
+            model_name='openai/clip-vit-base-patch32',
+            frozen_modules=['all'],
+            guide_channels=512,
+            use_text_projection_for_per_token=True,
+            lora_rank=16,
+            lora_alpha=32.0,
+            lora_dropout=0.05,
+            lora_target_layers=[8, 9, 10, 11],
+            lora_target_modules=['q_proj', 'v_proj'],
+        )))
 
-refcoco_plus_train_dataset = dict(
-    type='CustomRefCOCODataset',
-    data_root='data/',
-    ann_file='refcoco/refcoco+/train.json',
-    img_prefix='data/coco/train2014/',
-    filter_cfg=dict(filter_empty_gt=True, min_size=32),
-    pipeline=spatial_flip_train_pipeline)
-
-refcocog_train_dataset = dict(
-    type='CustomRefCOCODataset',
-    data_root='data/',
-    ann_file='refcoco/refcocog/train.json',
-    img_prefix='data/coco/train2014/',
-    filter_cfg=dict(filter_empty_gt=True, min_size=32),
-    pipeline=spatial_flip_train_pipeline)
-
-train_dataloader = dict(
-    batch_size={{_base_.train_batch_size_per_gpu}},
-    collate_fn=dict(type='yolow_collate'),
-    dataset=dict(
-        _delete_=True,
-        type='ConcatDataset',
-        datasets=[
-            refcoco_train_dataset,
-            refcoco_plus_train_dataset,
-            refcocog_train_dataset,
-        ],
-        ignore_keys=['classes', 'palette']))
-
-# Keep formal validation fixed to RefCOCOg val. Future experiments using this
-# standard path should compare against the current 80.37% Ref-YOLO-World (text LoRA) result; 78.97% the multi-dataset + spatial-flip baseline is a past baseline only.
-refcocog_val_dataset = dict(
-    type='CustomRefCOCOExpressionDataset',
-    data_root='data/',
-    ann_file='refcoco/refcocog/validation.json',
-    img_prefix='data/coco/train2014/',
-    filter_cfg=dict(filter_empty_gt=False, min_size=32),
-    test_mode=True,
-    pipeline={{_base_.test_pipeline}})
-
-val_dataloader = dict(dataset=dict(_delete_=True, **refcocog_val_dataset))
-test_dataloader = val_dataloader
-
-val_evaluator = dict(
+optim_wrapper = dict(
     _delete_=True,
-    type='CustomRefCOCOMetric',
-    ann_file='data/refcoco/refcocog/validation.json',
-    iou_threshold=0.5,
-    expected_num_expressions=4896)
+    type='OptimWrapper',
+    optimizer=dict(
+        type='AdamW',
+        lr={{_base_.base_lr}},
+        weight_decay={{_base_.weight_decay}},
+        batch_size_per_gpu={{_base_.train_batch_size_per_gpu}}),
+    paramwise_cfg=dict(
+        bias_decay_mult=0.0,
+        norm_decay_mult=0.0,
+        custom_keys={
+            'lora_': dict(lr_mult=1.0, decay_mult=1.0),
+            'logit_scale': dict(weight_decay=0.0),
+        }),
+    constructor='YOLOWv5OptimizerConstructor')
 
-test_evaluator = val_evaluator
+custom_hooks = [
+    dict(
+        type='EMAHook',
+        ema_type='ExpMomentumEMA',
+        momentum=0.0001,
+        update_buffers=True,
+        strict_load=False,
+        priority=49),
+    dict(
+        type='LoRASanityHook',
+        expected_pairs=8,
+        zero_tolerance=1e-8,
+        priority='VERY_HIGH'),
+]

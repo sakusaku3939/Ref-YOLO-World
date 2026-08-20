@@ -1,6 +1,6 @@
 """TNL2K evaluation: sequence-level TNL2K adaptation of the Ref-YOLO-World text-LoRA model."""
 
-_base_ = '../ref_yolo_world_multidataset_text_lora.py'
+_base_ = '../ref_yolo_world_multidataset.py'
 
 max_epochs = 3
 save_epoch_intervals = 1
@@ -12,7 +12,7 @@ train_batch_size_per_gpu = 16
 # training origin: TNL2K evaluation compares zero-shot Ref-YOLO-World against its own
 # TNL2K-adapted counterpart.
 load_from = (
-    'weights/ref_yolo_world_x_multidataset_text_lora.pth')
+    'weights/ref_yolo_world_x_multidataset.pth')
 resume = False
 
 tnl2k_train_dataset = dict(

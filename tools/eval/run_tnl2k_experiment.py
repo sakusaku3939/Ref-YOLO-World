@@ -19,7 +19,7 @@ from tnl2k_common import sha256_file, write_json  # noqa: E402
 DEFAULT_CONFIG = (
     'configs/ref_yolo_world/tnl2k/tnl2k_finetune.py')
 REFCOCOG_CONFIG = (
-    'configs/ref_yolo_world/ref_yolo_world_multidataset_text_lora.py')
+    'configs/ref_yolo_world/ref_yolo_world_multidataset.py')
 LVIS_SMOKE_CONFIG = (
     'configs/ref_yolo_world/eval/lvis_minival_smoke.py')
 PREFLIGHT_STEPS = 500
@@ -33,8 +33,7 @@ def parse_args() -> argparse.Namespace:
         '--baseline-checkpoint',
         type=Path,
         default=Path(
-            'weights/best_refcoco_text_lora_acc80p37_'
-            'fps27p82_epoch_10.pth'))
+            'weights/ref_yolo_world_x_multidataset.pth'))
     parser.add_argument(
         '--toolkit-root',
         type=Path,

@@ -1,6 +1,6 @@
 """LVIS minival regression config for the Ref-YOLO-World text-LoRA model."""
 
-_base_ = ['../ref_yolo_world_multidataset_text_lora.py']
+_base_ = ['../ref_yolo_world_multidataset.py']
 
 img_scale = (1280, 1280)
 num_classes = 1203

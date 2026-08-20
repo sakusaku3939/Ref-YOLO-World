@@ -23,12 +23,10 @@ DEFAULT_YOLO_CHECKPOINT = (
     "weights/best_refcoco_yolo_world_v2_x_finetune_refcocog_epoch_14.pth"
 )
 DEFAULT_REF_CONFIG = (
-    "work_dirs/"
-    "yolo_world_v2_x_finetune_refcocog_token_aware_pe_crossattn_multi_dataset_spatial_flip_text_lora/"
-    "yolo_world_v2_x_finetune_refcocog_token_aware_pe_crossattn_multi_dataset_spatial_flip_text_lora.py"
+    "configs/ref_yolo_world/ref_yolo_world_multidataset.py"
 )
 DEFAULT_REF_CHECKPOINT = (
-    "weights/ref_yolo_world_x_multidataset_text_lora.pth"
+    "weights/ref_yolo_world_x_multidataset.pth"
 )
 DEFAULT_ANN_FILE = "data/refcoco/refcocog/validation.json"
 
