@@ -6,4 +6,4 @@
 
 ## Validation
 
-<!-- Commands you ran and their results. Include accuracy/speed numbers if affected. -->
+<!-- Report only change-specific evidence, such as accuracy, speed, or reproducibility. Remove this section if not applicable. -->
