@@ -43,8 +43,8 @@ this repository because of their size. Download them into `weights/` and
 | File | Description | Download |
 | --- | --- | --- |
 | `yolo_world_v2_x_obj365v1_goldg_cc3mlite_pretrain_1280ft-14996a36.pth` | YOLO-World v2-X pretrained weights, the starting point of every training run. | [download link](https://huggingface.co/wondervictor/YOLO-World/resolve/main/yolo_world_v2_x_obj365v1_goldg_cc3mlite_pretrain_1280ft-14996a36.pth) |
-| `ref_yolo_world_x_multidataset.pth` | Released Ref-YOLO-World model, RefCOCOg val 81.62 %. | — |
-| `refcocog_val_text_features.pt` | Text-feature cache for the cached inference path. | — |
+| `ref_yolo_world_x_multidataset.pth` | Released Ref-YOLO-World model, RefCOCOg val 81.62 %. | [download link](https://www.dropbox.com/scl/fi/1inbg1m9h68l5q7r8ljf1/ref_yolo_world_x_multidataset.pth?rlkey=s9927hooz33ut9qcwkrsxdafu&dl=1) |
+| `refcocog_val_text_features.pt` | Text-feature cache for the cached inference path. | [download link](https://www.dropbox.com/scl/fi/bnsu886ssf4jv911cr8dt/refcocog_val_text_features.pt?rlkey=ip6oc7q9vz99kuet9dr4lbdkv&dl=1) |
 
 ## Acknowledgement
 
