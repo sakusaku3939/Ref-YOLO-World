@@ -94,8 +94,22 @@ class CustomRefCOCODataset(BaseDataset):
 
         image_id = raw_item.get('image_id', 0)
         file_name = f'COCO_train2014_{image_id:012d}.jpg'
-        
-        if self.img_prefix:
+        explicit_path = raw_item.get('image_path') or raw_item.get('img_path')
+
+        if explicit_path:
+            explicit_path = str(explicit_path)
+            normalized_root = self.data_root.rstrip('/\\')
+            if osp.isabs(explicit_path):
+                img_path = explicit_path
+            elif normalized_root and (
+                    explicit_path == normalized_root
+                    or explicit_path.startswith(normalized_root + osp.sep)):
+                img_path = explicit_path
+            elif self.data_root:
+                img_path = osp.join(self.data_root, explicit_path)
+            else:
+                img_path = explicit_path
+        elif self.img_prefix:
             img_path = osp.join(self.img_prefix, file_name)
         elif self.data_root:
             img_path = osp.join(self.data_root, 'coco', 'train2014', file_name)
@@ -129,8 +143,8 @@ class CustomRefCOCODataset(BaseDataset):
         if x2 <= x1 or y2 <= y1:
             return None
 
-        data_info['height'] = 480
-        data_info['width'] = 640
+        data_info['height'] = int(raw_item.get('height') or 480)
+        data_info['width'] = int(raw_item.get('width') or 640)
 
         sentences = raw_item.get('sentences', [])
         if not sentences:

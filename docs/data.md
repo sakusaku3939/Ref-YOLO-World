@@ -7,12 +7,14 @@ All paths below are relative to the repository root.
 ```
 data/
   coco/train2014/                       COCO 2014 train images (RefCOCO/+/g)
+  coco/val2017/                         COCO 2017 validation images (LVIS)
   refcoco/refcoco/{train,validation,testA,testB}.json
   refcoco/refcoco+/{train,validation,testA,testB}.json
   refcoco/refcocog/{train,validation,test}.json
   ref_adv/ref_adv_s.json                Ref-Adv-s (evaluation only)
   TNL2K/                                TNL2K sequences (evaluation only)
   coco/lvis/lvis_v1_minival_inserted_image_name.json
+  texts/lvis_v1_class_texts.json
 weights/
   yolo_world_v2_x_obj365v1_goldg_cc3mlite_pretrain_1280ft-14996a36.pth
   ref_yolo_world_x_multidataset.pth
@@ -32,26 +34,38 @@ unzip -q data/coco/train2014.zip -d data/coco
 
 ## RefCOCO / RefCOCO+ / RefCOCOg
 
-The annotation JSONs are fetched from Hugging Face and written in the shape
-consumed by `CustomRefCOCODataset`:
+The command below fetches every published split from the `jxu124/refcoco`,
+`jxu124/refcocoplus`, and `jxu124/refcocog` Hugging Face datasets. It then
+removes the union of all eight evaluation splits from the three training
+files by image ID. The filtered files are written directly to the paths used
+by the default training configs.
 
 ```bash
 python3 tools/data/prepare_refcoco_multi_dataset.py --data-root data
 ```
 
-Audit the resulting splits (counts, box sanity, train/val overlap) with:
+Audit all eleven files, bounding boxes, required text, and image-level
+train/evaluation separation with:
 
 ```bash
 python3 tools/data/refexp_dataset_audit.py \
-  --ann-file data/refcoco/refcocog/validation.json \
+  --data-root data \
   --output results/refexp_audit.json
 ```
+
+Add `--check-images` after downloading COCO train2014 to include image-file
+existence in the hard gate. Both commands exit nonzero on invalid data.
 
 ## Ref-Adv-s
 
 ```bash
 python3 tools/data/prepare_ref_adv_dataset.py --data-root data
 ```
+
+This downloads 1,142 images and writes `data/ref_adv/ref_adv_s.json` plus a
+source manifest. Ref-Adv-s is distributed by
+[`dddraxxx/ref-adv-s`](https://huggingface.co/datasets/dddraxxx/ref-adv-s)
+under CC-BY-4.0 and is evaluation-only.
 
 ## TNL2K
 
@@ -64,8 +78,27 @@ python3 tools/eval/prepare_tnl2k_dataset.py
 
 ## LVIS minival
 
+Formal regression uses the complete 4,809-image LVIS minival annotation.
+Download the COCO val2017 images, the GLIP-provided minival annotation used by
+YOLO-World, and the standard class text file:
+
 ```bash
-python3 tools/data/build_lvis_smoke_subset.py
+mkdir -p data/coco/lvis data/texts
+wget http://images.cocodataset.org/zips/val2017.zip -P data/coco
+unzip -q data/coco/val2017.zip -d data/coco
+wget -O data/coco/lvis/lvis_v1_minival_inserted_image_name.json \
+  https://huggingface.co/GLIPModel/GLIP/resolve/main/lvis_v1_minival_inserted_image_name.json
+wget -O data/texts/lvis_v1_class_texts.json \
+  https://raw.githubusercontent.com/AILab-CVC/YOLO-World/master/data/texts/lvis_v1_class_texts.json
+```
+
+Run the complete evaluation with:
+
+```bash
+CUDA_VISIBLE_DEVICES=0,1 ./tools/dist_test.sh \
+  configs/ref_yolo_world/eval/lvis_minival.py \
+  weights/ref_yolo_world_x_multidataset.pth \
+  2
 ```
 
 ## Weights

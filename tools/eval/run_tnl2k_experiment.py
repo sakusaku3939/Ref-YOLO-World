@@ -20,8 +20,7 @@ DEFAULT_CONFIG = (
     'configs/ref_yolo_world/tnl2k/tnl2k_finetune.py')
 REFCOCOG_CONFIG = (
     'configs/ref_yolo_world/ref_yolo_world_multidataset.py')
-LVIS_SMOKE_CONFIG = (
-    'configs/ref_yolo_world/eval/lvis_minival_smoke.py')
+LVIS_CONFIG = 'configs/ref_yolo_world/eval/lvis_minival.py'
 PREFLIGHT_STEPS = 500
 TRAIN_BATCH_SIZE_PER_GPU = 16
 
@@ -197,28 +196,27 @@ def refcocog_regression(checkpoint: Path, output_root: Path,
     return result
 
 
-def lvis_smoke_regression(checkpoint: Path, output_root: Path,
-                          gpus: int) -> dict:
-    full_annotation = Path(
+def lvis_regression(checkpoint: Path, output_root: Path,
+                    gpus: int) -> dict:
+    annotation = Path(
         'data/coco/lvis/lvis_v1_minival_inserted_image_name.json')
-    smoke_annotation = Path(
-        'data/coco/lvis/lvis_v1_minival_smoke_500_seed20260728.json')
-    if not smoke_annotation.exists():
-        run([
-            sys.executable, 'tools/data/build_lvis_smoke_subset.py',
-            '--input', str(full_annotation),
-            '--output', str(smoke_annotation),
-        ])
-    work_dir = output_root / 'regression' / 'lvis_smoke'
+    if not annotation.is_file():
+        raise FileNotFoundError(
+            f'LVIS minival annotation not found: {annotation}')
+    annotation_payload = json.loads(annotation.read_text(encoding='utf-8'))
+    image_count = len(annotation_payload.get('images', []))
+    if image_count == 0:
+        raise RuntimeError('LVIS minival annotation has no images')
+    work_dir = output_root / 'regression' / 'lvis'
     run([
-        'tools/dist_test.sh', LVIS_SMOKE_CONFIG, str(checkpoint), str(gpus),
+        'tools/dist_test.sh', LVIS_CONFIG, str(checkpoint), str(gpus),
         '--work-dir', str(work_dir),
     ])
     metrics_files = sorted(
         path for path in work_dir.glob('*/*.json')
         if re.fullmatch(r'\d{8}_\d{6}\.json', path.name))
     if not metrics_files:
-        raise RuntimeError('LVIS smoke metric JSON not found')
+        raise RuntimeError('LVIS minival metric JSON not found')
     metrics = json.loads(metrics_files[-1].read_text())
     result = {
         'status': 'passed',
@@ -226,7 +224,7 @@ def lvis_smoke_regression(checkpoint: Path, output_root: Path,
         'apr': metrics['lvis/bbox_APr'] * 100.0,
         'apc': metrics['lvis/bbox_APc'] * 100.0,
         'apf': metrics['lvis/bbox_APf'] * 100.0,
-        'n_images': 500,
+        'n_images': image_count,
         'checkpoint': str(checkpoint),
     }
     write_json(work_dir / 'summary.json', result)
@@ -412,7 +410,7 @@ def main() -> None:
     }
     regression = refcocog_regression(
         fine_checkpoint, args.output_root, args.gpus)
-    lvis_regression = lvis_smoke_regression(
+    lvis_result = lvis_regression(
         fine_checkpoint, args.output_root, args.gpus)
     summary = {
         'execution_complete': True,
@@ -423,7 +421,7 @@ def main() -> None:
         'comparison': {'delta': delta},
         'regression_audit': {
             'refcocog': regression,
-            'lvis_smoke': lvis_regression,
+            'lvis': lvis_result,
         },
         'config_sha256': sha256_file(Path(args.config)),
         'fine_tuning_checkpoint_sha256': sha256_file(fine_checkpoint),

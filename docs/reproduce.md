@@ -75,7 +75,8 @@ CUDA_VISIBLE_DEVICES=0 python3 tools/test.py \
   weights/ref_yolo_world_x_multidataset.pth \
   --cfg-options \
     test_dataloader.dataset.ann_file=ref_adv/ref_adv_s.json \
-    test_evaluator.ann_file=data/ref_adv/ref_adv_s.json
+    test_evaluator.ann_file=data/ref_adv/ref_adv_s.json \
+    test_evaluator.expected_num_expressions=1142
 ```
 
 ### LVIS minival regression
