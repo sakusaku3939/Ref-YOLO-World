@@ -30,21 +30,6 @@ module ablation of the method:
 
 ## Accuracy
 
-### RefCOCOg val (headline number)
-
-```bash
-CUDA_VISIBLE_DEVICES=0,1 ./tools/dist_test.sh \
-  configs/ref_yolo_world/ref_yolo_world_multidataset.py \
-  weights/ref_yolo_world_x_multidataset.pth \
-  2
-```
-
-Expected: `Acc@0.5 = 81.62` over 4,896 expressions.
-
-The configs evaluate every referring expression as one sample. The older
-one-sample-per-target protocol reports `80.37` (2068 / 2573) for the same
-checkpoint; the two numbers differ only in the denominator.
-
 ### All eight RefCOCO / RefCOCO+ / RefCOCOg splits
 
 ```bash
@@ -53,24 +38,6 @@ python3 tools/eval/refcoco_suite_benchmark.py \
   --checkpoint weights/ref_yolo_world_x_multidataset.pth \
   --gpus 2 \
   --output-dir results/refcoco_suite_accuracy
-```
-
-### Accuracy by expression type
-
-Generate the per-expression results, then compute the slice metrics:
-
-```bash
-CUDA_VISIBLE_DEVICES=0 python3 tools/test.py \
-  configs/ref_yolo_world/ref_yolo_world_multidataset.py \
-  weights/ref_yolo_world_x_multidataset.pth \
-  --cfg-options \
-    test_evaluator.dump_results=True \
-    test_evaluator.results_dir=results/refcocog_detailed_results
-
-python3 tools/eval/refcocog_slice_eval.py \
-  --ann-file data/refcoco/refcocog/validation.json \
-  --detailed-results results/refcocog_detailed_results/detailed_results.json \
-  --output-json results/refcocog_slice_summary.json
 ```
 
 ### Ref-Adv-s
@@ -85,7 +52,7 @@ CUDA_VISIBLE_DEVICES=0 python3 tools/test.py \
     test_evaluator.expected_num_expressions=1142
 ```
 
-### LVIS minival regression
+### LVIS minival
 
 ```bash
 CUDA_VISIBLE_DEVICES=0,1 ./tools/dist_test.sh \
@@ -127,10 +94,6 @@ python3 tools/speed/reliable_speed_measure.py \
   --ann-file data/refcoco/refcocog/validation.json \
   --output results/speed/text_cache_attention_reparameterization_cached.json
 ```
-
-Expected on a single L40S: `38.26 ms/image` (26.14 FPS) for
-`standard_baseline.py` and `20.08 ms/image` (49.59 FPS) for
-`lora_merged_low_margin_fp32.py`, at identical accuracy.
 
 Per-stage breakdown (backbone / neck / head / text encoder):
 
