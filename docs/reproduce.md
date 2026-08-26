@@ -57,10 +57,16 @@ python3 tools/eval/refcoco_suite_benchmark.py \
 
 ### Accuracy by expression type
 
-Requires a run with `dump_results=True` in the evaluator (see the configs under
-`configs/ref_yolo_world/speed/`).
+Generate the per-expression results, then compute the slice metrics:
 
 ```bash
+CUDA_VISIBLE_DEVICES=0 python3 tools/test.py \
+  configs/ref_yolo_world/ref_yolo_world_multidataset.py \
+  weights/ref_yolo_world_x_multidataset.pth \
+  --cfg-options \
+    test_evaluator.dump_results=True \
+    test_evaluator.results_dir=results/refcocog_detailed_results
+
 python3 tools/eval/refcocog_slice_eval.py \
   --ann-file data/refcoco/refcocog/validation.json \
   --detailed-results results/refcocog_detailed_results/detailed_results.json \
@@ -170,7 +176,8 @@ python3 tools/export/eval_ref_yoloworld_onnx_bbox_acc.py \
   configs/ref_yolo_world/speed/text_cache_attention_reparameterization_cached.py \
   weights/ref_yolo_world_x_multidataset.pth \
   --onnx work_dirs/export/ref_yolo_world.onnx \
-  --ann-file data/refcoco/refcocog/validation.json
+  --ann-file data/refcoco/refcocog/validation.json \
+  --output results/export/ref_yolo_world_onnx_bbox_acc.json
 ```
 
 ## Ablations
