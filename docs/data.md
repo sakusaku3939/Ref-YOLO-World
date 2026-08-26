@@ -47,16 +47,13 @@ python3 tools/data/refexp_dataset_audit.py \
   --output results/refexp_audit.json
 ```
 
-## Ref-Adv-s (adversarial evaluation set)
+## Ref-Adv-s
 
 ```bash
 python3 tools/data/prepare_ref_adv_dataset.py --data-root data
 ```
 
-Ref-Adv-s is evaluation-only. It must never be used for training, early
-stopping or threshold selection.
-
-## TNL2K (sequence-level evaluation)
+## TNL2K
 
 Download the official TNL2K archives, then build the deterministic frame and
 sequence manifests:
@@ -65,10 +62,7 @@ sequence manifests:
 python3 tools/eval/prepare_tnl2k_dataset.py
 ```
 
-## LVIS minival (open-vocabulary regression check)
-
-Used to confirm that RefCOCO fine-tuning does not destroy the open-vocabulary
-ability inherited from YOLO-World.
+## LVIS minival
 
 ```bash
 python3 tools/data/build_lvis_smoke_subset.py
