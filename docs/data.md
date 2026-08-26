@@ -38,23 +38,20 @@ The command below fetches every published split from the `jxu124/refcoco`,
 `jxu124/refcocoplus`, and `jxu124/refcocog` Hugging Face datasets. It then
 removes the union of all eight evaluation splits from the three training
 files by image ID. The filtered files are written directly to the paths used
-by the default training configs.
+by the default training configs. Run preparation and audit as a mandatory
+pre-training gate:
 
 ```bash
-python3 tools/data/prepare_refcoco_multi_dataset.py --data-root data
-```
-
-Audit all eleven files, bounding boxes, required text, and image-level
-train/evaluation separation with:
-
-```bash
+python3 tools/data/prepare_refcoco_multi_dataset.py --data-root data &&
 python3 tools/data/refexp_dataset_audit.py \
   --data-root data \
+  --check-images \
   --output results/refexp_audit.json
 ```
 
-Add `--check-images` after downloading COCO train2014 to include image-file
-existence in the hard gate. Both commands exit nonzero on invalid data.
+The audit checks all eleven annotation files, bounding boxes, required text,
+image files, and image-level train/evaluation separation. Do not start
+training unless both commands exit with status zero.
 
 ## Ref-Adv-s
 
