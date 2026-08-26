@@ -1,3 +1,4 @@
+<!-- Required: Write the PR title and description in English. -->
 <!-- PR title: <type>: <imperative summary> -->
 
 ## Summary
