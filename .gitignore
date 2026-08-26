@@ -5,7 +5,7 @@ build/
 dist/
 
 # Datasets, weights and run artifacts are distributed outside the repository.
-data/
+/data/
 weights/
 work_dirs/
 results/

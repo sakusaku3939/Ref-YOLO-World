@@ -26,7 +26,7 @@ lvis_dataset = dict(
     type='MultiModalDataset',
     dataset=dict(
         type='YOLOv5LVISV1Dataset',
-        data_root='/yolo/data/coco/',
+        data_root='data/coco/',
         test_mode=True,
         ann_file='lvis/lvis_v1_minival_inserted_image_name.json',
         data_prefix=dict(img=''),

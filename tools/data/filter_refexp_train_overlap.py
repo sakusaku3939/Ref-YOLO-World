@@ -66,15 +66,15 @@ def load_records(path: Path) -> list[dict[str, Any]]:
     return records
 
 
-def image_ids(records: list[dict[str, Any]]) -> set[int | str]:
-    return {record['image_id'] for record in records}
+def image_ids(records: list[dict[str, Any]]) -> set[str]:
+    return {str(record['image_id']) for record in records}
 
 
 def build_outputs(
     data_root: Path,
     output_root: Path,
 ) -> tuple[dict[Path, list[dict[str, Any]]], dict[str, Any]]:
-    unsafe_image_ids: set[int | str] = set()
+    unsafe_image_ids: set[str] = set()
     evaluation_summary = {}
 
     for split_name, relative_path in EVAL_FILES.items():
@@ -98,7 +98,7 @@ def build_outputs(
         raw_image_ids = image_ids(records)
         retained = [
             record for record in records
-            if record['image_id'] not in unsafe_image_ids
+            if str(record['image_id']) not in unsafe_image_ids
         ]
         retained_image_ids = image_ids(retained)
         removed_image_ids = raw_image_ids & unsafe_image_ids
@@ -160,7 +160,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         '--manifest',
         type=Path,
-        default=Path('results/refcoco_leak_free/overlap_manifest.json'),
+        default=Path('results/refcoco_overlap_filter/overlap_manifest.json'),
     )
     return parser.parse_args()
 

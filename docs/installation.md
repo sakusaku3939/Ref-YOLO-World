@@ -47,13 +47,3 @@ pip install -r requirements/basic_requirements.txt
 ```
 
 ONNX export additionally needs `requirements/onnx_requirements.txt`.
-
-## Checking the installation
-
-```bash
-python -c "import ref_yolo_world, yolo_world; print('ok')"
-python -m pytest tests -q
-```
-
-`tests/` only covers the evaluation protocol and does not need a GPU or the
-datasets.
