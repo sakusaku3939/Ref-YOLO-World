@@ -4,6 +4,12 @@ Every command assumes the repository root as working directory and the layout
 described in [data.md](data.md). Two L40S GPUs were used for all reported
 numbers.
 
+Inference runs at 640 x 640 (`test_img_scale` in
+`configs/yolo_world/yolo_world_v2_x.py`), while training keeps the 1280 x 1280
+YOLO-World setting (`img_scale`). `configs/ref_yolo_world/eval/lvis_minival.py`
+overrides the test resolution back to 1280 x 1280 so that the open-vocabulary
+detection numbers stay comparable with the published YOLO-World results.
+
 ## Training
 
 The released model is trained in one run from the YOLO-World v2-X pretrained
@@ -84,7 +90,18 @@ The seven inference-path conditions live in `configs/ref_yolo_world/speed/`:
 | `lora_merged_low_margin_fp32.py` | ✓ | ✓ | ✓ (FP16 forward, FP32 rerun near the decision boundary) |
 | `lora_merged_full_fp32.py` | ✓ | ✓ | ✓ (FP32 everywhere) |
 
-Measure one condition:
+`tools/speed/reliable_speed_measure.py` measures complete end-to-end latency.
+For every referring expression the timer starts immediately before the image
+file is read and stops after the IoU computation and `torch.cuda.synchronize()`,
+so it covers decoding, the test pipeline, batch construction, reparameterization,
+the host-to-device copy, inference, NMS and postprocessing, the device-to-host
+copy of the prediction, and IoU. Model construction, checkpoint loading, and
+cache pre-generation are excluded. The result JSON reports `complete_e2e_ms`
+(mean / p50 / p95), `complete_e2e_fps` (= `1000 / complete_e2e_ms.mean`), and
+`acc_at_0_5` over the measured expressions. Per-stage timings come from
+`tools/speed/stage_speed_breakdown.py` instead.
+
+Measure one condition over all 4,896 RefCOCOg UMD validation expressions:
 
 ```bash
 python3 tools/speed/reliable_speed_measure.py \
@@ -92,6 +109,7 @@ python3 tools/speed/reliable_speed_measure.py \
   --config configs/ref_yolo_world/speed/text_cache_attention_reparameterization_cached.py \
   --checkpoint weights/ref_yolo_world_x_multidataset.pth \
   --ann-file data/refcoco/refcocog/validation.json \
+  --measure all \
   --output results/speed/text_cache_attention_reparameterization_cached.json
 ```
 

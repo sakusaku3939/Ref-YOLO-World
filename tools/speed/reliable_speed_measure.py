@@ -1,10 +1,13 @@
-"""YOLO-World / Ref-YOLO-World の推論速度を同期付きで計測する。
+"""Ref-YOLO-World の完全 E2E 推論速度を同期付きで計測する。
 
 従来の `time.perf_counter()` だけの計測では CUDA kernel の非同期実行により
 CPU dispatch 時間だけを測ってしまうため、実 GPU 時間を過小評価しやすい。
-このスクリプトでは `torch.cuda.synchronize()` と CUDA Event の両方を使い、
-reparameterize、YOLO-only、end-to-end の時間を同じ per-image loop で測る。
-あわせて、measured images 全体を一括で測る throughput 指標も出す。
+このスクリプトでは referring expression 1 件ごとに、画像ファイル読み込みの
+直前から IoU 算出と `torch.cuda.synchronize()` までを 1 区間として測る。
+モデル構築、checkpoint 読み込み、キャッシュ事前生成は計測に含めない。
+
+backbone / neck / head / text encoder の段階内訳は
+`tools/speed/stage_speed_breakdown.py` が担当する。
 """
 
 import argparse
@@ -15,7 +18,7 @@ import statistics
 import subprocess
 import time
 from copy import deepcopy
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Sequence, Tuple
 
 import torch
 from mmdet.apis import init_detector
@@ -58,18 +61,29 @@ def _stats(samples: List[float]) -> Dict[str, float | int]:
     }
 
 
-def _throughput_stats(total_sec: float, total_images: int) -> Dict[str, float | int]:
-    if total_images <= 0 or total_sec <= 0:
-        return {
-            "total_sec": 0.0,
-            "total_images": total_images,
-            "fps": 0.0,
-        }
-    return {
-        "total_sec": round(total_sec, 4),
-        "total_images": total_images,
-        "fps": round(total_images / total_sec, 4),
-    }
+def _top_prediction(result: Any) -> Tuple[List[float], float]:
+    pred = result.pred_instances if hasattr(result, "pred_instances") else result
+    if len(pred.scores) == 0:
+        return [0.0, 0.0, 0.0, 0.0], 0.0
+    top_idx = int(pred.scores.argmax())
+    return (
+        [float(x) for x in pred.bboxes[top_idx].detach().cpu().tolist()],
+        float(pred.scores[top_idx]),
+    )
+
+
+def _compute_iou(box1: Sequence[float], box2: Sequence[float]) -> float:
+    x1 = max(float(box1[0]), float(box2[0]))
+    y1 = max(float(box1[1]), float(box2[1]))
+    x2 = min(float(box1[2]), float(box2[2]))
+    y2 = min(float(box1[3]), float(box2[3]))
+    inter = max(0.0, x2 - x1) * max(0.0, y2 - y1)
+    area1 = max(0.0, float(box1[2]) - float(box1[0])) * max(
+        0.0, float(box1[3]) - float(box1[1]))
+    area2 = max(0.0, float(box2[2]) - float(box2[0])) * max(
+        0.0, float(box2[3]) - float(box2[1]))
+    union = area1 + area2 - inter
+    return 0.0 if union <= 0 else inter / union
 
 
 def _cuda_device_index(device: str) -> int:
@@ -227,7 +241,7 @@ def _select_items(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="CUDA synchronize / Event を使って推論速度を測る。")
+        description="画像読み込みから IoU までの完全 E2E 推論速度を測る。")
     parser.add_argument("--label", required=True, help="結果に記録する任意の名前")
     parser.add_argument("--config", required=True, help="評価対象 config")
     parser.add_argument("--checkpoint", required=True, help="評価対象 checkpoint")
@@ -285,11 +299,6 @@ def parse_args() -> argparse.Namespace:
         type=float,
         default=1024.0,
         help="idle とみなす最大 GPU メモリ使用量 (MiB)",
-    )
-    parser.add_argument(
-        "--no-throughput",
-        action="store_true",
-        help="measured images 全体を一括で測る throughput 指標を省略する",
     )
     parser.add_argument(
         "--prewarm-attention-reparameterization-cache",
@@ -374,11 +383,9 @@ def main() -> None:
         args.measure,
     )
 
-    reparam_sync_ms: List[float] = []
-    yolo_sync_ms: List[float] = []
-    yolo_event_ms: List[float] = []
-    e2e_sync_ms: List[float] = []
-    measured_batches: List[tuple[dict, list[list[str]]]] = []
+    complete_e2e_ms: List[float] = []
+    correct = 0
+    no_prediction = 0
 
     with torch.no_grad():
         for idx, item in enumerate(warmup_items):
@@ -399,59 +406,43 @@ def main() -> None:
             torch.cuda.synchronize()
 
         for measured_idx, item in enumerate(measured_items):
+            gt_bbox = item.get("bbox")
+            if not isinstance(gt_bbox, list) or len(gt_bbox) != 4:
+                raise ValueError(
+                    f"Annotation item {measured_idx} has invalid bbox: {gt_bbox}")
+
+            torch.cuda.synchronize()
+            started = time.perf_counter()
             batch, texts = _build_batch(
                 test_pipeline,
                 args.ann_file,
                 item,
                 measured_idx,
             )
-
-            measured_batches.append((batch, texts))
-
-            torch.cuda.synchronize()
-            t0 = time.perf_counter()
             model.reparameterize(texts)
+            result_sample = model.test_step(batch)[0]
+            pred_bbox, score = _top_prediction(result_sample)
+            iou = _compute_iou(pred_bbox, gt_bbox)
             torch.cuda.synchronize()
-            t1 = time.perf_counter()
+            complete_e2e_ms.append((time.perf_counter() - started) * 1000.0)
 
-            start_event = torch.cuda.Event(enable_timing=True)
-            end_event = torch.cuda.Event(enable_timing=True)
-            start_event.record()
-            _ = model.test_step(batch)[0]
-            end_event.record()
-            torch.cuda.synchronize()
-            t2 = time.perf_counter()
-
-            reparam_sync_ms.append((t1 - t0) * 1000.0)
-            yolo_sync_ms.append((t2 - t1) * 1000.0)
-            yolo_event_ms.append(start_event.elapsed_time(end_event))
-            e2e_sync_ms.append((t2 - t0) * 1000.0)
+            if score == 0.0 and pred_bbox == [0.0, 0.0, 0.0, 0.0]:
+                no_prediction += 1
+            elif iou >= 0.5:
+                correct += 1
 
             measured = measured_idx + 1
             if measured % 100 == 0 or measured == len(measured_items):
-                mean_sync = sum(yolo_sync_ms) / len(yolo_sync_ms)
-                mean_event = sum(yolo_event_ms) / len(yolo_event_ms)
                 print(
                     f"{args.label} progress {measured}/{len(measured_items)} "
-                    f"yolo_sync_mean={mean_sync:.2f} "
-                    f"yolo_event_mean={mean_event:.2f}",
+                    f"complete_e2e_mean_ms="
+                    f"{statistics.fmean(complete_e2e_ms):.4f} "
+                    f"acc={correct / measured:.4f}",
                     flush=True,
                 )
 
-        throughput_e2e = None
-        if not args.no_throughput:
-            torch.cuda.synchronize()
-            t0 = time.perf_counter()
-            for batch, texts in measured_batches:
-                model.reparameterize(texts)
-                _ = model.test_step(batch)[0]
-            torch.cuda.synchronize()
-            t1 = time.perf_counter()
-            throughput_e2e = _throughput_stats(
-                t1 - t0,
-                len(measured_batches),
-            )
-
+    latency = _stats(complete_e2e_ms)
+    measured_total = len(measured_items)
     result = {
         "label": args.label,
         "warmup": len(warmup_items),
@@ -462,16 +453,21 @@ def main() -> None:
         "selection": selection,
         "annotation_protocol": "one_sample_per_expression",
         "grouped_annotation_total": len(grouped_ann_items),
-        "reparam_sync_ms": _stats(reparam_sync_ms),
-        "yolo_sync_ms": _stats(yolo_sync_ms),
-        "yolo_event_ms": _stats(yolo_event_ms),
-        "e2e_sync_ms": _stats(e2e_sync_ms),
-        "throughput_e2e": throughput_e2e,
-        "throughput_note": (
-            "throughput_e2e は measured images を事前に batch 化した後、"
-            "reparameterize + test_step のループ全体を同期付きで一括計測する。"
-            "FPS 計測用の指標であり、per-image latency ではない。"
-            "データ読み込みと test pipeline 構築時間は含めない。"
+        "batch_size": 1,
+        "correct_at_0_5": correct,
+        "acc_at_0_5": round(correct / measured_total, 6) if measured_total else 0.0,
+        "no_prediction": no_prediction,
+        "complete_e2e_ms": latency,
+        "complete_e2e_total_seconds": round(sum(complete_e2e_ms) / 1000.0, 4),
+        "complete_e2e_fps": (
+            round(1000.0 / latency["mean"], 4) if latency["mean"] > 0 else 0.0),
+        "fps_formula": "1000 / complete_e2e_ms.mean",
+        "timing_scope": (
+            "referring expression 1 件ごとに、画像ファイル読み込みの直前から"
+            "計測を開始し、デコード、test pipeline、バッチ構築、reparameterize、"
+            "CPU から GPU への転送、推論、NMS と後処理、予測の CPU 転送、"
+            "IoU 算出、CUDA 同期までを含む。モデル構築、checkpoint 読み込み、"
+            "キャッシュ事前生成は含めない。"
         ),
         "gpu_idle_check": gpu_idle_check,
         "config": args.config,

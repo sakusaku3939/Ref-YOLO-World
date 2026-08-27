@@ -23,6 +23,9 @@ train_batch_size_per_gpu = 16
 text_model_name = 'openai/clip-vit-base-patch32'
 load_from = 'weights/yolo_world_v2_x_obj365v1_goldg_cc3mlite_pretrain_1280ft-14996a36.pth'
 img_scale = (1280, 1280)
+# Ref-YOLO-World is released as a real-time model: training keeps the 1280
+# YOLO-World setting, and inference runs at 640.
+test_img_scale = (640, 640)
 
 # model settings
 model = dict(
@@ -101,10 +104,10 @@ train_pipeline_stage2 = [
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='YOLOv5KeepRatioResize', scale=img_scale),
+    dict(type='YOLOv5KeepRatioResize', scale=test_img_scale),
     dict(
         type='LetterResize',
-        scale=img_scale,
+        scale=test_img_scale,
         allow_scale_up=False,
         pad_val=dict(img=114)),
     dict(type='LoadAnnotations', with_bbox=True, _scope_='mmdet'),
