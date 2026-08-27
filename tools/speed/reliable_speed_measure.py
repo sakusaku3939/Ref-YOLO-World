@@ -1,13 +1,14 @@
-"""Ref-YOLO-World の完全 E2E 推論速度を同期付きで計測する。
+"""Measure the complete end-to-end inference speed of Ref-YOLO-World.
 
-従来の `time.perf_counter()` だけの計測では CUDA kernel の非同期実行により
-CPU dispatch 時間だけを測ってしまうため、実 GPU 時間を過小評価しやすい。
-このスクリプトでは referring expression 1 件ごとに、画像ファイル読み込みの
-直前から IoU 算出と `torch.cuda.synchronize()` までを 1 区間として測る。
-モデル構築、checkpoint 読み込み、キャッシュ事前生成は計測に含めない。
+Timing with `time.perf_counter()` alone underestimates real GPU time, because
+CUDA kernels run asynchronously and only the CPU dispatch gets observed. This
+script times one region per referring expression, starting immediately before
+the image file is read and ending after the IoU computation and
+`torch.cuda.synchronize()`. Model construction, checkpoint loading, and cache
+pre-generation are excluded.
 
-backbone / neck / head / text encoder の段階内訳は
-`tools/speed/stage_speed_breakdown.py` が担当する。
+Per-stage timings for the backbone, neck, head, and text encoder come from
+`tools/speed/stage_speed_breakdown.py`.
 """
 
 import argparse
@@ -241,7 +242,7 @@ def _select_items(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="画像読み込みから IoU までの完全 E2E 推論速度を測る。")
+        description="Measure complete end-to-end speed from image loading to IoU.")
     parser.add_argument("--label", required=True, help="結果に記録する任意の名前")
     parser.add_argument("--config", required=True, help="評価対象 config")
     parser.add_argument("--checkpoint", required=True, help="評価対象 checkpoint")
@@ -463,11 +464,13 @@ def main() -> None:
             round(1000.0 / latency["mean"], 4) if latency["mean"] > 0 else 0.0),
         "fps_formula": "1000 / complete_e2e_ms.mean",
         "timing_scope": (
-            "referring expression 1 件ごとに、画像ファイル読み込みの直前から"
-            "計測を開始し、デコード、test pipeline、バッチ構築、reparameterize、"
-            "CPU から GPU への転送、推論、NMS と後処理、予測の CPU 転送、"
-            "IoU 算出、CUDA 同期までを含む。モデル構築、checkpoint 読み込み、"
-            "キャッシュ事前生成は含めない。"
+            "Per referring expression, timing starts immediately before the "
+            "image file is read and includes decoding, the test pipeline, "
+            "batch construction, reparameterization, the host-to-device copy, "
+            "inference, NMS and postprocessing, the device-to-host copy of the "
+            "prediction, the IoU computation, and CUDA synchronization. Model "
+            "construction, checkpoint loading, and cache pre-generation are "
+            "excluded."
         ),
         "gpu_idle_check": gpu_idle_check,
         "config": args.config,
