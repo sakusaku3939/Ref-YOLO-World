@@ -72,10 +72,10 @@ train_dataloader = dict(batch_size=train_batch_size_per_gpu,
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='YOLOv5KeepRatioResize', scale=_base_.img_scale),
+    dict(type='YOLOv5KeepRatioResize', scale=_base_.test_img_scale),
     dict(
         type='LetterResize',
-        scale=_base_.img_scale,
+        scale=_base_.test_img_scale,
         allow_scale_up=False,
         pad_val=dict(img=114)),
     dict(type='LoadAnnotations', with_bbox=True, _scope_='mmdet'),
