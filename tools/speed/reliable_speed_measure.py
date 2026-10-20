@@ -181,6 +181,15 @@ def _build_batch(test_pipeline: Compose, ann_file: str, item: Dict[str, Any],
     return batch, texts
 
 
+def _set_text_state(model: Any, texts: List[List[str]],
+                    text_cache: Dict[str, Any] | None) -> None:
+    if text_cache is None:
+        model.reparameterize(texts)
+        return
+    model.texts = texts
+    model.text_feats, model.text_masks = text_cache[texts[0][0]]
+
+
 def _expand_expression_items(
     ann_items: List[Dict[str, Any]],
 ) -> List[Dict[str, Any]]:
@@ -285,6 +294,21 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--repeat",
+        type=int,
+        default=1,
+        help="Number of timed passes; the reported FPS is the mean over passes.",
+    )
+    parser.add_argument(
+        "--cache-text-features",
+        action="store_true",
+        help=(
+            "Encode every expression once before timing and reuse the features "
+            "(Stream inference for YOLO-World). Ref-YOLO-World sets its caches "
+            "in the config instead."
+        ),
+    )
+    parser.add_argument(
         "--skip-gpu-idle-check",
         action="store_true",
         help="計測前の nvidia-smi による GPU idle check を省略する",
@@ -319,6 +343,8 @@ def parse_args() -> argparse.Namespace:
         help="config 側の prewarm 設定を明示的に無効化する",
     )
     args = parser.parse_args()
+    if args.repeat < 1:
+        parser.error("--repeat must be at least 1.")
     if args.quick_500:
         if args.measure != "500":
             parser.error("--quick-500 cannot be combined with --measure other than 500.")
@@ -385,13 +411,23 @@ def main() -> None:
     )
 
     complete_e2e_ms: List[float] = []
+    fps_per_pass: List[float] = []
     correct = 0
     no_prediction = 0
 
     with torch.no_grad():
+        text_cache = None
+        if args.cache_text_features:
+            text_cache = {
+                item["captions"][0]: model.backbone.forward_text(
+                    [[item["captions"][0]]])
+                for item in warmup_items + measured_items
+            }
+            torch.cuda.synchronize()
+
         for idx, item in enumerate(warmup_items):
             batch, texts = _build_batch(test_pipeline, args.ann_file, item, idx)
-            model.reparameterize(texts)
+            _set_text_state(model, texts, text_cache)
             _ = model.test_step(batch)[0]
             torch.cuda.synchronize()
 
@@ -406,41 +442,45 @@ def main() -> None:
                 model.reparameterize(texts)
             torch.cuda.synchronize()
 
-        for measured_idx, item in enumerate(measured_items):
-            gt_bbox = item.get("bbox")
-            if not isinstance(gt_bbox, list) or len(gt_bbox) != 4:
-                raise ValueError(
-                    f"Annotation item {measured_idx} has invalid bbox: {gt_bbox}")
+        for pass_idx in range(args.repeat):
+            pass_ms: List[float] = []
+            for measured_idx, item in enumerate(measured_items):
+                gt_bbox = item.get("bbox")
+                if not isinstance(gt_bbox, list) or len(gt_bbox) != 4:
+                    raise ValueError(
+                        f"Annotation item {measured_idx} has invalid bbox: {gt_bbox}")
 
-            torch.cuda.synchronize()
-            started = time.perf_counter()
-            batch, texts = _build_batch(
-                test_pipeline,
-                args.ann_file,
-                item,
-                measured_idx,
-            )
-            model.reparameterize(texts)
-            result_sample = model.test_step(batch)[0]
-            pred_bbox, score = _top_prediction(result_sample)
-            iou = _compute_iou(pred_bbox, gt_bbox)
-            torch.cuda.synchronize()
-            complete_e2e_ms.append((time.perf_counter() - started) * 1000.0)
-
-            if score == 0.0 and pred_bbox == [0.0, 0.0, 0.0, 0.0]:
-                no_prediction += 1
-            elif iou >= 0.5:
-                correct += 1
-
-            measured = measured_idx + 1
-            if measured % 100 == 0 or measured == len(measured_items):
-                print(
-                    f"{args.label} progress {measured}/{len(measured_items)} "
-                    f"complete_e2e_mean_ms="
-                    f"{statistics.fmean(complete_e2e_ms):.4f} "
-                    f"acc={correct / measured:.4f}",
-                    flush=True,
+                torch.cuda.synchronize()
+                started = time.perf_counter()
+                batch, texts = _build_batch(
+                    test_pipeline,
+                    args.ann_file,
+                    item,
+                    measured_idx,
                 )
+                _set_text_state(model, texts, text_cache)
+                result_sample = model.test_step(batch)[0]
+                pred_bbox, score = _top_prediction(result_sample)
+                iou = _compute_iou(pred_bbox, gt_bbox)
+                torch.cuda.synchronize()
+                pass_ms.append((time.perf_counter() - started) * 1000.0)
+
+                if pass_idx == 0:
+                    if score == 0.0 and pred_bbox == [0.0, 0.0, 0.0, 0.0]:
+                        no_prediction += 1
+                    elif iou >= 0.5:
+                        correct += 1
+
+                measured = measured_idx + 1
+                if measured % 100 == 0 or measured == len(measured_items):
+                    print(
+                        f"{args.label} pass {pass_idx + 1}/{args.repeat} "
+                        f"progress {measured}/{len(measured_items)} "
+                        f"complete_e2e_mean_ms={statistics.fmean(pass_ms):.4f}",
+                        flush=True,
+                    )
+            complete_e2e_ms.extend(pass_ms)
+            fps_per_pass.append(1000.0 / statistics.fmean(pass_ms))
 
     latency = _stats(complete_e2e_ms)
     measured_total = len(measured_items)
@@ -460,9 +500,11 @@ def main() -> None:
         "no_prediction": no_prediction,
         "complete_e2e_ms": latency,
         "complete_e2e_total_seconds": round(sum(complete_e2e_ms) / 1000.0, 4),
-        "complete_e2e_fps": (
-            round(1000.0 / latency["mean"], 4) if latency["mean"] > 0 else 0.0),
-        "fps_formula": "1000 / complete_e2e_ms.mean",
+        "repeat": args.repeat,
+        "complete_e2e_fps": round(statistics.fmean(fps_per_pass), 4),
+        "complete_e2e_fps_per_pass": [round(fps, 4) for fps in fps_per_pass],
+        "fps_formula": "mean over passes of 1000 / (mean complete_e2e_ms in the pass)",
+        "cache_text_features": args.cache_text_features,
         "timing_scope": (
             "Per referring expression, timing starts immediately before the "
             "image file is read and includes decoding, the test pipeline, "

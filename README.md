@@ -46,6 +46,23 @@ this repository because of their size. Download them into `weights/` and
 | `ref_yolo_world_x_multidataset.pth` | Released Ref-YOLO-World model. | [download link](https://www.dropbox.com/scl/fi/1inbg1m9h68l5q7r8ljf1/ref_yolo_world_x_multidataset.pth?rlkey=s9927hooz33ut9qcwkrsxdafu&dl=1) |
 | `refcocog_val_text_features.pt` | Text-feature cache for the cached inference path. | [download link](https://www.dropbox.com/scl/fi/bnsu886ssf4jv911cr8dt/refcocog_val_text_features.pt?rlkey=ip6oc7q9vz99kuet9dr4lbdkv&dl=1) |
 
+## Inference speed
+
+Measure end-to-end FPS on RefCOCOg val with a batch size of one:
+
+```bash
+python3 tools/speed/reliable_speed_measure.py \
+  --label ref_yolo_world_stream \
+  --config configs/ref_yolo_world/speed/text_cache_attention_reparameterization_cached.py \
+  --checkpoint weights/ref_yolo_world_x_multidataset.pth \
+  --measure all --repeat 3 \
+  --output results/speed/ref_yolo_world_stream.json
+```
+
+This config measures Stream inference, which reuses the cached text-side quantities.
+For Single inference, which encodes the expression for every image, use `configs/ref_yolo_world/speed/attention_reparameterization_uncached.py`.
+Other inference-path conditions are listed in [docs/reproduce.md](docs/reproduce.md#inference-speed).
+
 ## Acknowledgement
 
 This work builds directly on
