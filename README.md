@@ -54,13 +54,24 @@ lightweight modules:
 
 ## 📦 Checkpoints
 
+### PyTorch
+
 Download the checkpoints into `weights/`.
 
 | Model | Config | Download |
 | --- | --- | --- |
 | Ref-YOLO-World | [config](configs/ref_yolo_world/ref_yolo_world_multidataset.py) | [🤗 Download link](https://huggingface.co/sakusaku3939/Ref-YOLO-World/resolve/main/ref_yolo_world_x_multidataset.pth) |
-| Ref-YOLO-World (Core ML, FP16) | – | [🤗 Download link](https://huggingface.co/sakusaku3939/Ref-YOLO-World/tree/main/ref_yolo_world_x_multidataset_fp16.mlpackage) |
 | YOLO-World v2-X (pretrained, for training) | – | [🤗 Download link](https://huggingface.co/wondervictor/YOLO-World/resolve/main/yolo_world_v2_x_obj365v1_goldg_cc3mlite_pretrain_1280ft-14996a36.pth) |
+
+### iPhone / iPad (Core ML)
+
+Encode the expression once with the text encoder, then run the detector on each
+camera frame.
+
+| Model | Precision | Download |
+| --- | --- | --- |
+| Text encoder | FP16 | [🤗 Download link](https://huggingface.co/sakusaku3939/Ref-YOLO-World/tree/main/ref_yolo_world_x_multidataset_text_encoder_fp16.mlpackage) |
+| Detector | FP16 | [🤗 Download link](https://huggingface.co/sakusaku3939/Ref-YOLO-World/tree/main/ref_yolo_world_x_multidataset_fp16.mlpackage) |
 
 ## 🚀 Demo
 
