@@ -11,7 +11,7 @@ We trained the released model in two stages.
 YOLO-World v2-X pretrained weights:
 
 ```bash
-CUDA_VISIBLE_DEVICES=0,1 ./tools/dist_train.sh \
+./tools/dist_train.sh \
   configs/ref_yolo_world/ref_yolo_world_multidataset_no_lora.py \
   2 --amp
 ```
@@ -23,7 +23,7 @@ more epochs from the stage-1 checkpoint. The released model is the best
 checkpoint (epoch 10):
 
 ```bash
-CUDA_VISIBLE_DEVICES=0,1 ./tools/dist_train.sh \
+./tools/dist_train.sh \
   configs/ref_yolo_world/ref_yolo_world_multidataset.py \
   2 --amp
 ```
@@ -54,7 +54,7 @@ python3 tools/eval/refcoco_suite_benchmark.py \
 ### Ref-Adv-s
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 python3 tools/test.py \
+python3 tools/test.py \
   configs/ref_yolo_world/ref_yolo_world_multidataset.py \
   weights/ref_yolo_world_x_multidataset.pth \
   --cfg-options \
@@ -66,7 +66,7 @@ CUDA_VISIBLE_DEVICES=0 python3 tools/test.py \
 ### LVIS minival
 
 ```bash
-CUDA_VISIBLE_DEVICES=0,1 ./tools/dist_test.sh \
+./tools/dist_test.sh \
   configs/ref_yolo_world/eval/lvis_minival.py \
   weights/ref_yolo_world_x_multidataset.pth \
   2

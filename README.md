@@ -88,7 +88,7 @@ python3 demo/ref_demo.py \
 ## 📊 Evaluation
 
 ```bash
-CUDA_VISIBLE_DEVICES=0,1 ./tools/dist_test.sh \
+./tools/dist_test.sh \
   configs/ref_yolo_world/ref_yolo_world_multidataset.py \
   weights/ref_yolo_world_x_multidataset.pth \
   2

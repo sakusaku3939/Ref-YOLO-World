@@ -105,7 +105,7 @@ wget -O data/texts/lvis_v1_class_texts.json \
 Run the complete evaluation with:
 
 ```bash
-CUDA_VISIBLE_DEVICES=0,1 ./tools/dist_test.sh \
+./tools/dist_test.sh \
   configs/ref_yolo_world/eval/lvis_minival.py \
   weights/ref_yolo_world_x_multidataset.pth \
   2
