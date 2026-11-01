@@ -1,13 +1,35 @@
+<div align="center">
+
 # Ref-YOLO-World
 
-Real-time Referring Expression Comprehension (REC) built on top of
-[YOLO-World](https://github.com/AILab-CVC/YOLO-World).
+**Decoupling Text-Side Computation for Efficient Referring Expression Comprehension on Edge Devices**
 
-YOLO-World detects objects from a *category* prompt, but a referring expression
-such as *"the left person in a red shirt"* must be resolved against the other
-objects in the same image. Ref-YOLO-World keeps the YOLO-World one-stage
-detector and adds four components that make it read the expression
-token-by-token, plus an inference path that removes the per-query text cost:
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
+
+</div>
+
+Ref-YOLO-World is a lightweight referring expression comprehension (REC) model
+for edge devices, built on [YOLO-World](https://github.com/AILab-CVC/YOLO-World).
+It encodes a referring expression once and reuses it across camera frames,
+reaching 81.29% Acc@0.5 on RefCOCOg val. Its Core ML version runs at 15.73 FPS
+on an iPhone 15 Pro.
+
+## Overview
+
+<div align="center">
+<img src="assets/overview.png" alt="Overview of Ref-YOLO-World" width="100%">
+</div>
+
+Ref-YOLO-World keeps its text branch independent of the image. All text-side
+computation, including the key/value projections of the cross-attention, runs
+once per expression and is cached, so each frame only runs a one-stage
+detector. Per-token text features enter the detection path through two
+lightweight modules:
+
+- **Ref-T-CSPLayer** guides each neck stage with all token features through
+  cross-attention, together with a 2-D positional encoding for spatial words.
+- **Ref-Text Contrastive Head** adds the context of all tokens to each region
+  feature before the region–text score.
 
 ## Getting started
 
@@ -15,16 +37,18 @@ token-by-token, plus an inference path that removes the per-query text cost:
 2. [Dataset preparation](docs/data.md)
 3. [Training and evaluation](docs/reproduce.md)
 
-Quick evaluation of the released checkpoint:
+## Checkpoints
 
-```bash
-CUDA_VISIBLE_DEVICES=0,1 ./tools/dist_test.sh \
-  configs/ref_yolo_world/ref_yolo_world_multidataset.py \
-  weights/ref_yolo_world_x_multidataset.pth \
-  2
-```
+Download the files into `weights/` and `results/text_cache/`; see
+[docs/data.md](docs/data.md) for the expected layout.
 
-Single-image demo:
+| File | Description | Download |
+| --- | --- | --- |
+| `yolo_world_v2_x_obj365v1_goldg_cc3mlite_pretrain_1280ft-14996a36.pth` | YOLO-World v2-X pretrained weights, the starting point of every training run. | [download link](https://huggingface.co/wondervictor/YOLO-World/resolve/main/yolo_world_v2_x_obj365v1_goldg_cc3mlite_pretrain_1280ft-14996a36.pth) |
+| `ref_yolo_world_x_multidataset.pth` | Released Ref-YOLO-World model. | [download link](https://www.dropbox.com/scl/fi/1inbg1m9h68l5q7r8ljf1/ref_yolo_world_x_multidataset.pth?rlkey=s9927hooz33ut9qcwkrsxdafu&dl=1) |
+| `refcocog_val_text_features.pt` | Text-feature cache for the cached inference path. | [download link](https://www.dropbox.com/scl/fi/bnsu886ssf4jv911cr8dt/refcocog_val_text_features.pt?rlkey=ip6oc7q9vz99kuet9dr4lbdkv&dl=1) |
+
+## Demo
 
 ```bash
 python3 demo/ref_demo.py \
@@ -34,17 +58,17 @@ python3 demo/ref_demo.py \
   --text "the person on the left"
 ```
 
-## Checkpoints
+## Evaluation
 
-Model weights and the precomputed text-feature cache are distributed outside
-this repository because of their size. Download them into `weights/` and
-`results/text_cache/` respectively; see [docs/data.md](docs/data.md).
+```bash
+CUDA_VISIBLE_DEVICES=0,1 ./tools/dist_test.sh \
+  configs/ref_yolo_world/ref_yolo_world_multidataset.py \
+  weights/ref_yolo_world_x_multidataset.pth \
+  2
+```
 
-| File | Description | Download |
-| --- | --- | --- |
-| `yolo_world_v2_x_obj365v1_goldg_cc3mlite_pretrain_1280ft-14996a36.pth` | YOLO-World v2-X pretrained weights, the starting point of every training run. | [download link](https://huggingface.co/wondervictor/YOLO-World/resolve/main/yolo_world_v2_x_obj365v1_goldg_cc3mlite_pretrain_1280ft-14996a36.pth) |
-| `ref_yolo_world_x_multidataset.pth` | Released Ref-YOLO-World model. | [download link](https://www.dropbox.com/scl/fi/1inbg1m9h68l5q7r8ljf1/ref_yolo_world_x_multidataset.pth?rlkey=s9927hooz33ut9qcwkrsxdafu&dl=1) |
-| `refcocog_val_text_features.pt` | Text-feature cache for the cached inference path. | [download link](https://www.dropbox.com/scl/fi/bnsu886ssf4jv911cr8dt/refcocog_val_text_features.pt?rlkey=ip6oc7q9vz99kuet9dr4lbdkv&dl=1) |
+Training, the other benchmarks, and the ablations are described in
+[docs/reproduce.md](docs/reproduce.md).
 
 ## Inference speed
 
@@ -65,21 +89,6 @@ Other inference-path conditions are listed in [docs/reproduce.md](docs/reproduce
 
 ## Acknowledgement
 
-This work builds directly on
-[YOLO-World](https://github.com/AILab-CVC/YOLO-World) and
-[MMYOLO](https://github.com/open-mmlab/mmyolo). Please cite the original
-YOLO-World paper alongside this repository:
-
-```bibtex
-@inproceedings{Cheng2024YOLOWorld,
-  title     = {YOLO-World: Real-Time Open-Vocabulary Object Detection},
-  author    = {Cheng, Tianheng and Song, Lin and Ge, Yixiao and Liu, Wenyu and Wang, Xinggang and Shan, Ying},
-  booktitle = {CVPR},
-  year      = {2024}
-}
-```
-
-## License
-
-Ref-YOLO-World inherits the GPL-3.0 license of upstream YOLO-World. See
-[LICENSE](LICENSE).
+This work builds on [YOLO-World](https://github.com/AILab-CVC/YOLO-World) and
+[MMYOLO](https://github.com/open-mmlab/mmyolo), and is released under the same
+[GPL-3.0 license](LICENSE).
