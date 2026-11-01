@@ -17,7 +17,11 @@ per-token text features while keeping text processing precomputable, so each
 expression is encoded only once. It achieves 81.29% Acc@0.5 on RefCOCOg val and
 runs at 15.73 FPS on an iPhone 15 Pro.
 
-## Overview
+## 🔥 News
+
+- `[2026-11-01]` We released the code and model weights of Ref-YOLO-World.
+
+## 💡 Overview
 
 <div align="center">
 <img src="assets/overview.png" alt="Overview of Ref-YOLO-World" width="100%">
@@ -34,13 +38,13 @@ lightweight modules:
 - **Ref-Text Contrastive Head** adds the context of all tokens to each region
   feature before the region–text score.
 
-## Getting started
+## 🛠️ Getting started
 
 1. [Installation](docs/installation.md)
 2. [Dataset preparation](docs/data.md)
 3. [Training and evaluation](docs/reproduce.md)
 
-## Checkpoints
+## 📦 Checkpoints
 
 Download the files into `weights/` and `results/text_cache/`; see
 [docs/data.md](docs/data.md) for the expected layout.
@@ -51,7 +55,7 @@ Download the files into `weights/` and `results/text_cache/`; see
 | `ref_yolo_world_x_multidataset.pth` | Released Ref-YOLO-World model. | [download link](https://www.dropbox.com/scl/fi/1inbg1m9h68l5q7r8ljf1/ref_yolo_world_x_multidataset.pth?rlkey=s9927hooz33ut9qcwkrsxdafu&dl=1) |
 | `refcocog_val_text_features.pt` | Text-feature cache for the cached inference path. | [download link](https://www.dropbox.com/scl/fi/bnsu886ssf4jv911cr8dt/refcocog_val_text_features.pt?rlkey=ip6oc7q9vz99kuet9dr4lbdkv&dl=1) |
 
-## Demo
+## 🚀 Demo
 
 ```bash
 python3 demo/ref_demo.py \
@@ -61,7 +65,7 @@ python3 demo/ref_demo.py \
   --text "the person on the left"
 ```
 
-## Evaluation
+## 📊 Evaluation
 
 ```bash
 CUDA_VISIBLE_DEVICES=0,1 ./tools/dist_test.sh \
@@ -73,7 +77,7 @@ CUDA_VISIBLE_DEVICES=0,1 ./tools/dist_test.sh \
 Training, the other benchmarks, and the ablations are described in
 [docs/reproduce.md](docs/reproduce.md).
 
-## Inference speed
+## ⚡ Inference speed
 
 Measure end-to-end FPS on RefCOCOg val with a batch size of one:
 

@@ -1,4 +1,4 @@
-# Dataset and artifact preparation
+# 📂 Dataset and artifact preparation
 
 All paths below are relative to the repository root.
 
@@ -114,7 +114,7 @@ CUDA_VISIBLE_DEVICES=0,1 ./tools/dist_test.sh \
 ## Weights
 
 Download the required checkpoints listed in the
-[README Checkpoints section](../README.md#checkpoints) into `weights/`.
+[README Checkpoints section](../README.md#-checkpoints) into `weights/`.
 
 If you start from a plain YOLO-World checkpoint, convert it to the
 Ref-YOLO-World parameter layout first:

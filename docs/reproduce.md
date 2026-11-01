@@ -1,4 +1,4 @@
-# Training and evaluation
+# 🏋️ Training and evaluation
 
 Run every command from the repository root, with the data laid out as described
 in [data.md](data.md). We used two NVIDIA L40S GPUs for all reported numbers.

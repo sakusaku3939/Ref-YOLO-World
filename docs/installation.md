@@ -1,4 +1,4 @@
-# Installation
+# 🛠️ Installation
 
 Ref-YOLO-World is an MMYOLO / MMDetection project. The reference environment is
 CUDA 11.8 with PyTorch 2.1.2.
