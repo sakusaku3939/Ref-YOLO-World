@@ -35,7 +35,7 @@ detector. Per-token text features enter the detection path through two
 lightweight modules:
 
 - **Ref-T-CSPLayer** guides each neck stage with all token features through
-  cross-attention, together with a 2-D positional encoding for spatial words.
+  cross-attention, together with a 2D positional embedding for spatial words.
 - **Ref-Text Contrastive Head** adds the context of all tokens to each region
   feature before the region–text score.
 
