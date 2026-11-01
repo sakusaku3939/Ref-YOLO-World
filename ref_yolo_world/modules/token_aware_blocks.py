@@ -1,6 +1,6 @@
-# token_aware: Token-Aware Cross-Attention Block (改善1)
-# 元の MaxSigmoidAttnBlock / MaxSigmoidCSPLayerWithTwoConv は変更せず、
-# 別クラスとしてコピーして実装している。
+# Token-Aware Cross-Attention Block
+# Implemented as separate copies of MaxSigmoidAttnBlock / MaxSigmoidCSPLayerWithTwoConv,
+# leaving the original classes unchanged.
 
 from typing import Optional
 
@@ -24,13 +24,13 @@ from ref_yolo_world.modules.folded_ref_attn import (
 class TokenAwareMaxSigmoidAttnBlock(BaseModule):
     """Token-Aware Cross-Attention Block.
 
-    MaxSigmoidAttnBlock のコピー。max(dim=-1) の代わりに softmax で重み付き集約し、
-    トークンレベルの情報を保持する。guide は (B, N, guide_channels)、
-    N はトークン数（per-token 時は L、pooled 時は 1）。
+    A copy of MaxSigmoidAttnBlock that aggregates with softmax weights instead of
+    max(dim=-1), preserving token-level information. guide is (B, N, guide_channels), where
+    N is the number of tokens (L for per-token features, 1 for pooled features).
 
-    use_spatial_pe=True のとき、attention の query (image embed) に学習可能な
-    空間位置エンコーディングを加算する。出力層 0 初期化により、学習開始時は
-    PE なしと完全同一の出力を返す。
+    When use_spatial_pe=True, a learnable spatial positional encoding is added to the
+    attention query (image embed). Since its output layer is zero-initialized, the output
+    at the start of training is identical to that without PE.
     """
 
     def __init__(self,
@@ -123,7 +123,7 @@ class TokenAwareMaxSigmoidAttnBlock(BaseModule):
 
     def init_weights(self):
         super().init_weights()
-        # context 経路をゼロ初期化 → 学習開始時は out = x_gated（元ブロックと同じ）
+        # Zero-initialize the context path so that out = x_gated at the start of training
         nn.init.zeros_(self.guide_value_fc.weight)
         if self.guide_value_fc.bias is not None:
             nn.init.zeros_(self.guide_value_fc.bias)
@@ -150,7 +150,7 @@ class TokenAwareMaxSigmoidAttnBlock(BaseModule):
         self._folded_attn_params = fold_token_aware_block(self, guide, guide_mask)
 
     def _make_spatial_pe(self, H: int, W: int, embed: Tensor) -> Tensor:
-        """正規化 (x, y) 座標から PE を生成し embed の shape に合わせて返す。"""
+        """Build a PE from normalized (x, y) coordinates, shaped to match embed."""
         gy = torch.linspace(0.0, 1.0, H, device=embed.device, dtype=embed.dtype)
         gx = torch.linspace(0.0, 1.0, W, device=embed.device, dtype=embed.dtype)
         grid_y, grid_x = torch.meshgrid(gy, gx, indexing='ij')
@@ -242,10 +242,10 @@ class TokenAwareMaxSigmoidAttnBlock(BaseModule):
 
 @MODELS.register_module()
 class TokenAwareMaxSigmoidCSPLayerWithTwoConv(CSPLayerWithTwoConv):
-    """Token-Aware CSP layer (改善1).
+    """Token-Aware CSP layer.
 
-    MaxSigmoidCSPLayerWithTwoConv のコピー。
-    attn_block に TokenAwareMaxSigmoidAttnBlock を使用する。
+    A copy of MaxSigmoidCSPLayerWithTwoConv that uses TokenAwareMaxSigmoidAttnBlock as
+    attn_block.
     """
 
     def __init__(self,

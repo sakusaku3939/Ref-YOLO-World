@@ -73,8 +73,9 @@ class HuggingCLIPLanguageBackbone(BaseModule):
         clip_config = CLIPTextConfig.from_pretrained(model_name,
                                                      attention_dropout=dropout)
         self.model = CLIPTP.from_pretrained(model_name, config=clip_config)
-        # textは文字列リストで、padding枠はRandomLoadTextの空文字列。
-        # 整数0との比較では全枠が有効判定になるため空文字列をpad値とする。
+        # text is a list of strings, and padding slots are empty strings from RandomLoadText.
+        # Comparing with the integer 0 would mark every slot as valid, so use the empty string
+        # as the pad value.
         self.pad_value = ''
         self._freeze_modules()
 

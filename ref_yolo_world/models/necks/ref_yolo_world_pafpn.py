@@ -1,5 +1,5 @@
 # Copyright (c) Tencent Inc. All rights reserved.
-# token_aware: guide_mask 対応（学習時パディングマスク）
+# Supports guide_mask (padding mask during training)
 import copy
 from typing import List, Union
 
@@ -15,7 +15,10 @@ from mmyolo.models.necks.yolov8_pafpn import YOLOv8PAFPN
 
 @MODELS.register_module()
 class RefYOLOWorldPAFPN(YOLOv8PAFPN):
-    """Path Aggregation Network used in YOLO World. token_aware: guide_mask で学習時パディングマスク対応。"""
+    """Path Aggregation Network used in YOLO World.
+
+    Supports guide_mask for masking padded tokens during training.
+    """
     def __init__(self,
                  in_channels: List[int],
                  out_channels: Union[List[int], int],

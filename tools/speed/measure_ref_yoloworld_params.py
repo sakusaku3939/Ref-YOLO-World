@@ -1,4 +1,4 @@
-"""Ref-YOLO-World の代表的な推論バリアントのパラメータ数を測定する。"""
+"""Measure parameter counts of representative Ref-YOLO-World inference variants."""
 
 from __future__ import annotations
 
@@ -44,7 +44,7 @@ class VariantResult:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Ref-YOLO-World の total/trainable パラメータ数を測定する。"
+        description="Measure total/trainable parameter counts of Ref-YOLO-World."
     )
     parser.add_argument("--config", default=DEFAULT_CONFIG)
     parser.add_argument("--text-cache-path", default=DEFAULT_TEXT_CACHE)
@@ -53,9 +53,9 @@ def parse_args() -> argparse.Namespace:
         "--format",
         choices=("markdown", "json"),
         default="markdown",
-        help="出力形式。",
+        help="Output format.",
     )
-    parser.add_argument("--output", help="任意の出力先パス。")
+    parser.add_argument("--output", help="Optional output path.")
     return parser.parse_args()
 
 
@@ -159,14 +159,14 @@ def merge_lora_weights(model: torch.nn.Module) -> None:
     text_model = getattr(getattr(model, "backbone", None), "text_model", None)
     merge = getattr(text_model, "merge_lora_weights", None)
     if merge is None:
-        raise RuntimeError("backbone.text_model に merge_lora_weights() がありません。")
+        raise RuntimeError("backbone.text_model has no merge_lora_weights().")
     merge()
 
 
 def set_folded_attention(model: torch.nn.Module, token_len: int) -> None:
     set_folded = getattr(getattr(model, "bbox_head", None), "set_folded_attn_params", None)
     if set_folded is None:
-        raise RuntimeError("bbox_head に set_folded_attn_params() がありません。")
+        raise RuntimeError("bbox_head has no set_folded_attn_params().")
     embed_dims = int(model.bbox_head.head_module.embed_dims)
     txt_feats = torch.randn(1, 1, embed_dims)
     per_token_feats = torch.randn(1, token_len, embed_dims)
@@ -178,30 +178,30 @@ def collect_results(args: argparse.Namespace) -> list[VariantResult]:
     setup_registry()
     base_cfg = load_config(args.config)
     results = [
-        build_result("LoRAあり", base_cfg),
-        build_result("LoRAなし", make_no_lora_config(base_cfg)),
-        build_result("LoRA merge後", base_cfg, merge_lora_weights),
+        build_result("with LoRA", base_cfg),
+        build_result("without LoRA", make_no_lora_config(base_cfg)),
+        build_result("after LoRA merge", base_cfg, merge_lora_weights),
     ]
     if os.path.exists(args.text_cache_path):
         results.append(
             build_result(
-                "text cacheあり",
+                "with text cache",
                 make_text_cache_config(base_cfg, args.text_cache_path),
             )
         )
     else:
         results.append(
             VariantResult(
-                label="text cacheあり",
+                label="with text cache",
                 status="skipped",
-                note=f"text cache が見つかりません: {args.text_cache_path}",
+                note=f"text cache not found: {args.text_cache_path}",
             )
         )
     results.extend(
         [
-            build_result("PR927 reparameterize前", base_cfg),
+            build_result("before attention reparameterization", base_cfg),
             build_result(
-                "PR927 reparameterize後",
+                "after attention reparameterization",
                 base_cfg,
                 lambda model: set_folded_attention(model, args.folded_token_len),
             ),
@@ -218,7 +218,7 @@ def to_million(value: int | None) -> str:
 
 def results_to_markdown(results: list[VariantResult]) -> str:
     lines = [
-        "| 条件 | total params | trainable params | LoRA params | status |",
+        "| variant | total params | trainable params | LoRA params | status |",
         "|---|---:|---:|---:|---|",
     ]
     for result in results:

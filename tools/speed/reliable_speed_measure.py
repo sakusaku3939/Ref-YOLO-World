@@ -252,45 +252,45 @@ def _select_items(
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Measure complete end-to-end speed from image loading to IoU.")
-    parser.add_argument("--label", required=True, help="結果に記録する任意の名前")
-    parser.add_argument("--config", required=True, help="評価対象 config")
-    parser.add_argument("--checkpoint", required=True, help="評価対象 checkpoint")
+    parser.add_argument("--label", required=True, help="Arbitrary name recorded in the results")
+    parser.add_argument("--config", required=True, help="Config to evaluate")
+    parser.add_argument("--checkpoint", required=True, help="Checkpoint to evaluate")
     parser.add_argument("--ann-file", default="data/refcoco/refcocog/validation.json")
-    parser.add_argument("--output", required=True, help="JSON 出力先")
+    parser.add_argument("--output", required=True, help="Output JSON path")
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--warmup", type=int, default=20)
     parser.add_argument(
         "--amp",
         action="store_true",
-        help="推論時計測で detector の inference_autocast を有効化する",
+        help="Enable the detector's inference_autocast during timing",
     )
     parser.add_argument(
         "--amp-dtype",
         default=None,
-        help="autocast dtype を上書きする。例: float16 / bfloat16",
+        help="Override the autocast dtype, e.g. float16 / bfloat16",
     )
     parser.add_argument(
         "--amp-scope",
         default=None,
-        help="autocast scope を上書きする。both / forward / reparameterize",
+        help="Override the autocast scope: both / forward / reparameterize",
     )
     parser.add_argument(
         "--amp-fp32-modules",
         nargs="+",
         default=None,
-        help="AMP 中も FP32 で実行する module alias 群",
+        help="Module aliases to keep in FP32 under AMP",
     )
     parser.add_argument(
         "--measure",
         default="500",
-        help="計測件数。整数、または validation 全件を測る 'all'",
+        help="Number of samples to measure: an integer, or 'all' for the whole validation set",
     )
     parser.add_argument(
         "--quick-500",
         action="store_true",
         help=(
-            "research-analyze などの短時間確認用に、warmup 後の 500 件だけを"
-            "計測することを明示する。--measure 500 の別名。"
+            "Measure only 500 samples after warmup, for quick checks. "
+            "Alias for --measure 500."
         ),
     )
     parser.add_argument(
@@ -311,19 +311,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--skip-gpu-idle-check",
         action="store_true",
-        help="計測前の nvidia-smi による GPU idle check を省略する",
+        help="Skip the GPU idle check via nvidia-smi before measurement",
     )
     parser.add_argument(
         "--max-gpu-util",
         type=float,
         default=5.0,
-        help="idle とみなす最大 GPU 使用率 (%%)",
+        help="Maximum GPU utilization (%%) to treat the GPU as idle",
     )
     parser.add_argument(
         "--max-gpu-memory-mb",
         type=float,
         default=1024.0,
-        help="idle とみなす最大 GPU メモリ使用量 (MiB)",
+        help="Maximum GPU memory usage (MiB) to treat the GPU as idle",
     )
     parser.add_argument(
         "--prewarm-attention-reparameterization-cache",
@@ -332,15 +332,15 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         default=None,
         help=(
-            "計測対象 texts の reparameterize を事前実行し、"
-            "attention reparameterization cache hit 時の latency を測る"
+            "Run reparameterize on the measured texts beforehand to measure "
+            "latency on attention reparameterization cache hits"
         ),
     )
     parser.add_argument(
         "--no-prewarm-attention-reparameterization-cache",
         dest="prewarm_attention_reparameterization_cache",
         action="store_false",
-        help="config 側の prewarm 設定を明示的に無効化する",
+        help="Explicitly disable the prewarm setting in the config",
     )
     args = parser.parse_args()
     if args.repeat < 1:

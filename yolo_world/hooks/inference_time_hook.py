@@ -1,4 +1,5 @@
-"""推論時間計測用 Hook（総時間・1枚あたり・分散時は全プロセス集約）。"""
+"""Hook for measuring inference time (total, per image, and aggregated over all
+processes in distributed runs)."""
 import json
 import os
 import os.path as osp
@@ -12,11 +13,13 @@ from mmengine.hooks import Hook
 
 @HOOKS.register_module()
 class InferenceTimeHook(Hook):
-    """Test の推論ステップ全体（データ取得〜forward〜結果）の時間を計測する。
+    """Measure the time of the whole test inference step (data loading, forward, results).
 
-    全イテレを含めた総推論時間と総画像数から 1枚あたり時間を算出する。
-    分散時は全プロセスの時間・枚数を all_reduce(sum) で集約する。
-    結果は標準出力と work_dir 配下の inference_time.json に出力する。
+    Computes the per-image time from the total inference time over all iterations and
+    the total number of images.
+    In distributed runs, times and image counts are aggregated over all processes with
+    all_reduce(sum).
+    Results are written to stdout and to inference_time.json under work_dir.
     """
 
     def before_test_epoch(self, runner):
@@ -90,7 +93,7 @@ class InferenceTimeHook(Hook):
                 self._saved_inference_time_path = out_path
 
     def after_run(self, runner):
-        """Epoch(test) のログの後に 'Inference time saved to' を出すため after_run で出力する。"""
+        """Print in after_run so that 'Inference time saved to' appears after the Epoch(test) log."""
         rank = (
             torch.distributed.get_rank()
             if (torch.distributed.is_available() and torch.distributed.is_initialized())

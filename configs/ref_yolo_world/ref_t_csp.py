@@ -1,5 +1,5 @@
 # RefCOCOg + Token-Aware Neck + per-token (B, L, 512)
-# Token-Aware ブロック + HuggingCLIPLanguageBackbonePerToken 使用
+# Uses Token-Aware blocks + HuggingCLIPLanguageBackbonePerToken
 
 _base_ = '../yolo_world/finetune_refcocog.py'
 

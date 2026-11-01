@@ -264,8 +264,8 @@ class YOLOWorldHeadModule(YOLOv8HeadModule):
 
         if txt_masks is not None:
             txt_masks = txt_masks.view(b, -1, 1, 1).expand(-1, -1, h, w)
-            # -10e6はFP16の上限(65504)を超え-infになり、BCEがnanを生むため
-            # dtypeの有限最小値で埋める。
+            # -10e6 exceeds the FP16 range (65504) and becomes -inf, which makes BCE produce nan,
+            # so fill with the smallest finite value of the dtype.
             mask_fill = torch.finfo(cls_logit.dtype).min
             if self.training:
                 cls_logit = cls_logit * txt_masks

@@ -379,14 +379,14 @@ def _format_value(value: Any) -> str:
 
 def _make_table(rows: list[dict[str, Any]]) -> str:
     headers = [
-        "モデル",
-        "テキストエンコーダー ms",
+        "Model",
+        "Text encoder ms",
         "Backbone ms",
         "Neck ms",
         "Head ms",
-        "後処理 ms",
-        "残差 ms",
-        "合計 ms",
+        "Postprocess ms",
+        "Residual ms",
+        "Total ms",
         "FPS",
     ]
     keys = [
@@ -440,11 +440,11 @@ def _write_report(output_dir: str, rows: list[dict[str, Any]], selection: dict[s
             "",
             "## Notes",
             "",
-            "- 前処理は表と合計から除外する。raw metricsには `pipeline_preprocess_ms` と `model_data_preprocessor_ms` を残す。",
-            "- `テキストエンコーダー ms` is `model.reparameterize(texts)`.",
+            "- Preprocessing is excluded from the table and the total. Raw metrics keep `pipeline_preprocess_ms` and `model_data_preprocessor_ms`.",
+            "- `Text encoder ms` is `model.reparameterize(texts)`.",
             "- `Head ms` is `bbox_head.forward` only.",
-            "- `後処理 ms` is `bbox_head.predict_by_feat` plus `add_pred_to_datasample`.",
-            "- `残差 ms` is unaccounted test_step overhead after wrapped stages.",
+            "- `Postprocess ms` is `bbox_head.predict_by_feat` plus `add_pred_to_datasample`.",
+            "- `Residual ms` is unaccounted test_step overhead after wrapped stages.",
             "- Stage wrapping adds CUDA synchronization around each stage, so use this for attribution rather than direct latency comparison with unwrapped E2E.",
             "",
             "## Selection",

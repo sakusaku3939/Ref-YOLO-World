@@ -74,25 +74,25 @@ def parse_args():
     parser.add_argument(
         '--highlight-top1',
         action='store_true',
-        help='スコアが最も高い bbox だけ別色で描画する（デフォルト: 緑）。',
+        help='draw only the highest-scoring bbox in a different color (default: green).',
     )
     parser.add_argument(
         '--highlight-color',
         type=str,
         default='0,255,0',
-        help='highlight-top1 で使う色（BGR の "B,G,R" 形式、例: 0,255,0=緑）。',
+        help='color used by --highlight-top1 in BGR "B,G,R" format, e.g. 0,255,0 = green.',
     )
     parser.add_argument(
         '--box-thickness',
         type=int,
         default=1,
-        help='bbox の線の太さ（ピクセル）。',
+        help='bbox line thickness in pixels.',
     )
     parser.add_argument(
         '--highlight-thickness',
         type=int,
         default=3,
-        help='--highlight-top1 で描画する枠の線の太さ（ピクセル）。',
+        help='line thickness in pixels of the box drawn by --highlight-top1.',
     )
     parser.add_argument(
         '--cfg-options',
@@ -235,7 +235,7 @@ def inference_detector(model,
     #        0.13335061, 0.1260023 , 0.1129957 , 0.11005145, 0.07233267,
     #        0.06443565, 0.05152101], dtype=float32), class_id=array([6, 7, 8, 7, 8, 6, 4, 3, 5, 1, 4, 3, 0, 2, 5, 0, 2]), tracker_id=None, data={}, metadata={})
 
-    # 同じラベルの時は、bboxのサイズが大きいものだけを残す
+    # For boxes with the same label, keep only the largest one
     # result = filter_largest_bbox_per_class_numpy(result)
     result = {
         'xyxy': result.xyxy,
@@ -243,11 +243,11 @@ def inference_detector(model,
         'confidence': result.confidence,
     }
 
-    # 各ラベルとスコアをコンソールに出力
-    print(f"\n結果（{osp.basename(image)}）:")
+    # Print each label and score to the console
+    print(f"\nResults ({osp.basename(image)}):")
     for class_id, confidence in zip(result["class_id"], result["confidence"]):
         label_text = texts[class_id][0]
-        print(f"  ラベル: {label_text}, スコア: {confidence:.4f}")
+        print(f"  label: {label_text}, score: {confidence:.4f}")
 
 
 def compute_area_np(bboxes):
@@ -286,7 +286,7 @@ def filter_largest_bbox_per_class_numpy(detections):
             max_index = indices[np.argmax(cls_areas)]
             keep_indices.append(max_index)
 
-    # index順にフィルタリング
+    # Filter in index order
     keep_indices = np.array(keep_indices)
 
     filtered_detections = {

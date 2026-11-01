@@ -42,9 +42,9 @@ class CustomRefCOCOMetric(BaseMetric):
     For each sample, if the top-1 predicted box has IoU >= threshold
     with the ground truth box, it's considered correct.
     
-    Note: HuggingFace版RefCOCOデータセット（jxu124/refcoco*）では、
-    トップレベルの'bbox'フィールドは既に[x1, y1, x2, y2]形式に変換されています。
-    一方、'raw_anns'内の'bbox'はCOCO標準の[x, y, w, h]形式のままです。
+    Note: In the HuggingFace RefCOCO datasets (jxu124/refcoco*),
+    the top-level 'bbox' field is already converted to [x1, y1, x2, y2] format,
+    while 'bbox' in 'raw_anns' stays in the standard COCO [x, y, w, h] format.
     """
 
     default_prefix: Optional[str] = 'refcoco'
@@ -169,7 +169,7 @@ class CustomRefCOCOMetric(BaseMetric):
 
             is_correct = False
             if len(gt_bbox) == 4:
-                # HuggingFace版RefCOCOはxyxy、COCO由来データはxywh。
+                # HuggingFace RefCOCO uses xyxy; COCO-derived data uses xywh.
                 dataset_source = gt_item.get('dataset_source', '')
                 if dataset_source == 'coco':
                     x, y, w, h = gt_bbox

@@ -37,7 +37,7 @@ model = dict(
     backbone=dict(
         _delete_=True,
         type='MultiModalYOLOBackbone',
-        frozen_stages=4,  # バックボーンを凍結
+        frozen_stages=4,  # freeze the backbone
         image_model={{_base_.model.backbone}},
         text_model=dict(
             type='HuggingCLIPLanguageBackbone',
@@ -148,8 +148,8 @@ optim_wrapper = dict(optimizer=dict(
     paramwise_cfg=dict(bias_decay_mult=0.0,
                        norm_decay_mult=0.0,
                        custom_keys={
-                           # 'backbone.image_model': dict(lr_mult=0., decay_mult=0.),  # バックボーンを凍結
-                           # 'backbone.text_model': dict(lr_mult=0., decay_mult=0.),  # バックボーンを凍結
+                           # 'backbone.image_model': dict(lr_mult=0., decay_mult=0.),  # freeze the backbone
+                           # 'backbone.text_model': dict(lr_mult=0., decay_mult=0.),  # freeze the backbone
                            'backbone.text_model':
                                dict(lr_mult=0.01),
                            'logit_scale':

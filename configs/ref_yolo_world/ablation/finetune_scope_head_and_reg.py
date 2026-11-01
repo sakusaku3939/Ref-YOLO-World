@@ -1,5 +1,5 @@
-# RefCOCOg + 通常の YOLO-World（Head + reg をファインチューニング）
-# Backbone / Neck のみ凍結。cls_preds / cls_contrasts / reg_preds を学習。
+# RefCOCOg + vanilla YOLO-World (fine-tune Head + reg)
+# Freeze only Backbone / Neck. Train cls_preds / cls_contrasts / reg_preds.
 
 _base_ = '../../yolo_world/finetune_refcocog.py'
 
@@ -15,7 +15,7 @@ default_hooks = dict(
         save_best='auto',
         max_keep_ckpts=-1))
 
-# Backbone / Neck のみ凍結（reg_preds は学習する）
+# Freeze only Backbone / Neck (reg_preds is trained)
 optim_wrapper = dict(
     optimizer=dict(
         _delete_=True,

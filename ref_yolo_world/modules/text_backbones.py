@@ -1,5 +1,6 @@
-# token_aware: per-token 出力用 CLIP テキスト Backbone
-# Head 用に (B, 80, 512) を返しつつ、Neck 用に正例 1 文の per-token (B, L, 512) を _last_per_token に保持する
+# CLIP text backbone with per-token outputs
+# Returns (B, 80, 512) for the Head and stores per-token features (B, L, 512) of the single
+# input referring expression in _last_per_token for the Neck
 
 import itertools
 import math
@@ -56,11 +57,13 @@ class LoRALinear(nn.Module):
 @MODELS.register_module()
 @MMDET_MODELS.register_module()
 class HuggingCLIPLanguageBackbonePerToken(BaseModule):
-    """CLIP テキスト Backbone: Head 用 pooled (B, 80, 512) + Neck 用 per-token (B, L, 512).
+    """CLIP text backbone: pooled (B, 80, 512) for the Head + per-token (B, L, 512) for the Neck.
 
-    forward() の戻り値は既存と同一 (txt_feats, text_mask) で、Head は (B, 80, 512) のまま。
-    正例 1 文の per-token は self._last_per_token (B, L, 512) に格納し、
-    Detector が neck_guide_positive_only 時に Neck に渡す。
+    forward() returns (txt_feats, text_mask) as in HuggingCLIPLanguageBackbone, so the Head
+    still receives (B, 80, 512).
+    Per-token features of the single input referring expression are stored in
+    self._last_per_token (B, L, 512), and the Detector passes them to the Neck when
+    neck_guide_positive_only is set.
     """
 
     def __init__(self,
@@ -136,10 +139,11 @@ class HuggingCLIPLanguageBackbonePerToken(BaseModule):
         else:
             text_mask = None
 
-        # 正例 1 文の per-token (B, L, guide_channels)
-        # use_text_projection_for_per_token=True: CLIP text_projection（pooled と同じ空間）
-        # use_text_projection_for_per_token=False: last_hidden_state のみ、または per_token_proj で次元合わせ
-        # per-token 用 hidden states（最終層 or 後ろから2番目）
+        # Per-token features of the single input referring expression (B, L, guide_channels)
+        # use_text_projection_for_per_token=True: CLIP text_projection (same space as pooled)
+        # use_text_projection_for_per_token=False: last_hidden_state only, or per_token_proj to
+        # match dimensions
+        # Hidden states for per-token features (last or penultimate layer)
         hidden_states = getattr(txt_outputs, 'hidden_states', None)
         if hidden_states is not None:
             if self.use_penultimate_for_per_token and len(hidden_states) >= 2:
@@ -162,12 +166,12 @@ class HuggingCLIPLanguageBackbonePerToken(BaseModule):
                 first_sent = self.per_token_proj(first_sent)
             first_sent = first_sent / first_sent.norm(p=2, dim=-1, keepdim=True).clamp(min=1e-8)
             self._last_per_token = first_sent
-            # attention_mask: 1=有効, 0=パディング → (B, L) で 1 文目だけ
+            # attention_mask: 1=valid, 0=padding -> (B, L) for the first sentence only
             if 'attention_mask' in text_tokens:
                 am = text_tokens['attention_mask']
                 am = am.view(B, n_slots, -1)[:, 0]
 
-                # 施策B: BOS / EOS など特殊トークンをマスク
+                # Mask special tokens such as BOS / EOS
                 if self.mask_special_tokens and 'input_ids' in text_tokens:
                     ids = text_tokens['input_ids'].view(B, n_slots, -1)[:, 0]
                     bos_id = self.tokenizer.bos_token_id
@@ -177,7 +181,7 @@ class HuggingCLIPLanguageBackbonePerToken(BaseModule):
                         special_mask |= (ids == bos_id)
                     if eos_id is not None:
                         special_mask |= (ids == eos_id)
-                    # attention_mask: 1=有効, 0=padding/special
+                    # attention_mask: 1=valid, 0=padding/special
                     am = am.masked_fill(special_mask, 0)
 
                 self._last_per_token_attention_mask = am.to(first_sent.device)

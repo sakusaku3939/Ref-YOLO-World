@@ -1,6 +1,7 @@
 # Token-Aware Neck + Spatial Positional Encoding
-# Cross-Attention の image query に学習可能 PE を加算
-# pe_proj の出力層は 0 初期化 → 学習開始時は PE なしと完全同一
+# Adds a learnable PE to the image query of cross-attention
+# The output layer of pe_proj is zero-initialized, so at the start of training the
+# output is identical to the variant without PE
 
 _base_ = './ref_t_csp.py'
 

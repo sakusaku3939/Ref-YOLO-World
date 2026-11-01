@@ -1,5 +1,5 @@
 # Ref-YOLO-World: RefYOLOWorldHeadModule / RefYOLOWorldHead
-# CrossAttnContrastiveHead のみ。per_token_feats / per_token_mask を中継。
+# CrossAttnContrastiveHead only. Forwards per_token_feats / per_token_mask.
 
 import math
 import copy
@@ -32,7 +32,10 @@ from ref_yolo_world.modules.folded_ref_attn import fold_cross_attn_head
 
 @MODELS.register_module()
 class RefYOLOWorldHeadModule(YOLOv8HeadModule):
-    """参照表現用 Head Module。CrossAttnContrastiveHead のみ。per_token_feats を受け取る。"""
+    """Head module for referring expressions.
+
+    Uses CrossAttnContrastiveHead only and takes per_token_feats.
+    """
 
     def __init__(self,
                  *args,
@@ -208,10 +211,10 @@ class RefYOLOWorldHeadModule(YOLOv8HeadModule):
 
 @MODELS.register_module()
 class RefYOLOWorldHead(YOLOv8Head):
-    """参照表現用 YOLO-World Head。
+    """YOLO-World Head for referring expressions.
 
-    per_token_feats を head_module に中継する。
-    loss / predict / predict_by_feat / loss_by_feat は既存と同一。
+    Forwards per_token_feats to head_module.
+    loss / predict / predict_by_feat / loss_by_feat are the same as in YOLOWorldHead.
     """
 
     def __init__(self, world_size=-1, *args, **kwargs) -> None:

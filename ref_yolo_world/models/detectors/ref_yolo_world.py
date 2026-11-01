@@ -1,7 +1,7 @@
 # Ref-YOLO-World: YOLO-World Detector for referring expression.
-# Backbone の入力参照表現の per-token 特徴を Head に渡す。
-# Neck への受け渡しにも対応する（設定名 neck_guide_positive_only は互換性のため維持）。
-# HuggingCLIPLanguageBackbonePerToken (_last_per_token) と互換。
+# Passes per-token features of the input referring expression from the Backbone to the Head.
+# They can also be passed to the Neck (enabled by neck_guide_positive_only).
+# Works with HuggingCLIPLanguageBackbonePerToken (_last_per_token).
 
 from contextlib import nullcontext
 from typing import Any, List, Optional, Tuple, Union
@@ -18,12 +18,15 @@ from ref_yolo_world.modules.text_feature_cache import TextFeatureCache
 
 @MODELS.register_module()
 class RefYOLOWorldDetector(YOLODetector):
-    """参照表現用 YOLO-World Detector。
+    """YOLO-World Detector for referring expressions.
 
-    extract_feat() 後に backbone から per-token 特徴を取り出して bbox_head に渡す。
-    neck_guide_positive_only=True のとき，入力参照表現の per-token 特徴を
-    Neck にも guide として渡す（RefYOLOWorldPAFPN + TokenAware ブロック用）。
-    この設定名の ``positive`` は旧称であり，意味的な負例表現との対比を表さない。
+    After extract_feat(), takes per-token features from the backbone and passes them to
+    bbox_head.
+    When neck_guide_positive_only=True, the per-token features of the input referring
+    expression are also passed to the Neck as guide (for RefYOLOWorldPAFPN + Token-Aware
+    blocks).
+    Despite the name, ``positive`` simply refers to the input referring expression;
+    no negative expressions are involved.
     """
 
     def __init__(self,
@@ -348,12 +351,13 @@ class RefYOLOWorldDetector(YOLODetector):
         return results_list, extract_sec, head_sec
 
     def _get_per_token_feats(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
-        """cache または backbone の text_model から per-token 特徴を取得する。
+        """Get per-token features from the cache or the backbone text_model.
 
-        text feature cache 有効時は cache から取り出した入力参照表現の token を優先する。
-        それ以外は _last_per_token / _last_per_token_attention_mask
-        (HuggingCLIPLanguageBackbonePerToken) または _per_token_feats /
-        _per_token_mask を参照する。
+        When the text feature cache is enabled, tokens of the input referring expression
+        taken from the cache are used first.
+        Otherwise, reads _last_per_token / _last_per_token_attention_mask
+        (HuggingCLIPLanguageBackbonePerToken), or _per_token_feats /
+        _per_token_mask.
         """
         if self._cached_per_token_feats is not None:
             return self._cached_per_token_feats, self._cached_per_token_mask

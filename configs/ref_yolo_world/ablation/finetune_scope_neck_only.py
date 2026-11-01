@@ -1,5 +1,5 @@
-# RefCOCOg + 通常の YOLO-World（Neck のみファインチューニング）
-# Backbone / Head 全体（cls_preds, cls_contrasts, reg_preds）を凍結。Neck のみ学習。
+# RefCOCOg + vanilla YOLO-World (fine-tune Neck only)
+# Freeze Backbone and the whole Head (cls_preds, cls_contrasts, reg_preds). Train Neck only.
 
 _base_ = '../../yolo_world/finetune_refcocog.py'
 
@@ -15,7 +15,7 @@ default_hooks = dict(
         save_best='auto',
         max_keep_ckpts=-1))
 
-# Backbone + Head 全体を凍結（Neck のみ学習する）
+# Freeze Backbone + the whole Head (train Neck only)
 optim_wrapper = dict(
     optimizer=dict(
         _delete_=True,

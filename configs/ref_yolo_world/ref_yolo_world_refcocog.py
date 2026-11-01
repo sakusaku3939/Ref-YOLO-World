@@ -1,6 +1,6 @@
 # Token-Aware Neck (Spatial PE) + Cross-Attention Head
 # Neck: TokenAwareMaxSigmoidCSPLayerWithTwoConv (use_spatial_pe=True)
-# Head: CrossAttnContrastiveHead (use_positional_encoding=False; Neck で PE 済み)
+# Head: CrossAttnContrastiveHead (use_positional_encoding=False; PE is applied in the Neck)
 
 _base_ = './ref_t_csp_spatial_pe.py'
 
