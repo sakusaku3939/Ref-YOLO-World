@@ -8,11 +8,14 @@
 
 </div>
 
-Ref-YOLO-World is a lightweight referring expression comprehension (REC) model
-for edge devices, built on [YOLO-World](https://github.com/AILab-CVC/YOLO-World).
-It encodes a referring expression once and reuses it across camera frames,
-reaching 81.29% Acc@0.5 on RefCOCOg val. Its Core ML version runs at 15.73 FPS
-on an iPhone 15 Pro.
+**Ref-YOLO-World** is an efficient referring expression comprehension (REC) model
+for edge devices. It brings object detection from full sentences such as *"a man
+wearing sunglasses and a beige coat"*, not just category names like *"person"*, to
+small devices with limited compute such as smartphones. Built on the open-vocabulary
+object detector [YOLO-World](https://github.com/AILab-CVC/YOLO-World), it uses
+per-token text features while keeping text processing precomputable, so each
+expression is encoded only once. It achieves 81.29% Acc@0.5 on RefCOCOg val and
+runs at 15.73 FPS on an iPhone 15 Pro.
 
 ## Overview
 
