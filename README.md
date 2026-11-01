@@ -38,6 +38,13 @@ lightweight modules:
 - **Ref-Text Contrastive Head** adds the context of all tokens to each region
   feature before the region–text score.
 
+<div align="center">
+<img src="assets/accuracy_fps.png" alt="Accuracy and speed on RefCOCOg val" width="37%">
+<img src="assets/examples.png" alt="Predictions on RefCOCOg val" width="62%">
+<br>
+<sub>Left: accuracy and GPU inference speed on RefCOCOg val. Right: predictions compared with YOLO-World.</sub>
+</div>
+
 ## 🛠️ Getting started
 
 1. [Installation](docs/installation.md)
