@@ -78,6 +78,9 @@ camera frame.
 
 ## 🚀 Demo
 
+Try the [browser demo](https://huggingface.co/spaces/sakusaku3939/Ref-YOLO-World),
+which runs entirely in your browser. To run the demo locally on a single image:
+
 ```bash
 python3 demo/ref_demo.py \
   --config configs/ref_yolo_world/ref_yolo_world_multidataset.py \
