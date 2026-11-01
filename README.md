@@ -4,6 +4,8 @@
 
 **Decoupling Text-Side Computation for Efficient Referring Expression Comprehension on Edge Devices**
 
+[Yuki Aoki](https://sakusaku3939.com/), [Hiroo Bekku](https://bekkuzer.com/), [Tadashi Okoshi](https://www.okoshi.org/), [Jin Nakazawa](https://scholar.google.com/citations?user=Lj6r908AAAAJ)
+
 [![Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Models-yellow)](https://huggingface.co/sakusaku3939/Ref-YOLO-World)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
 
