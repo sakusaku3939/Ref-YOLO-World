@@ -46,5 +46,6 @@ pip install --no-build-isolation -e .
 pip install -r requirements/basic_requirements.txt
 ```
 
-ONNX export additionally needs `requirements/onnx_requirements.txt`. Core ML
-conversion also needs `requirements/mobile_requirements.txt`.
+ONNX export additionally needs `requirements/onnx_requirements.txt`. Core ML and
+TFLite conversion also need `requirements/mobile_requirements.txt`; see
+[onnx2tf](https://github.com/PINTO0309/onnx2tf) for its extra dependencies.

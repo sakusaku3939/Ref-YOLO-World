@@ -1,2 +1,4 @@
 coremltools
 onnx2torch
+onnx2tf==1.28.*
+tensorflow

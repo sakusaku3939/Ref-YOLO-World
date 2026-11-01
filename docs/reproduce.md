@@ -176,6 +176,28 @@ Add `--image-input` to take an RGB image instead of a normalized tensor, or
 `--compute-precision fp32` for FP32 compute. On macOS, the script also checks
 the Core ML outputs against ONNX Runtime and writes the errors to the report.
 
+### TFLite
+
+Export a separate ONNX model with `--tflite-strip-cls-score-where`, which works
+around an onnx2tf 1.28 shape bug, then convert it and check the outputs against
+ONNX Runtime:
+
+```bash
+python3 tools/export/export_ref_yoloworld_text_cache_onnx.py \
+  configs/ref_yolo_world/speed/text_cache_attention_reparameterization_cached.py \
+  weights/ref_yolo_world_x_multidataset.pth \
+  --tflite-strip-cls-score-where \
+  --output work_dirs/export/ref_yolo_world_tflite.onnx
+
+python3 tools/export/convert_ref_yoloworld_tflite.py \
+  --onnx work_dirs/export/ref_yolo_world_tflite.onnx \
+  --output-dir work_dirs/export/tflite
+
+python3 tools/export/check_ref_yoloworld_tflite_parity.py \
+  --onnx work_dirs/export/ref_yolo_world_tflite.onnx \
+  --tflite work_dirs/export/tflite/ref_yolo_world_tflite_float32.tflite
+```
+
 ## Ablations
 
 ```bash
