@@ -97,16 +97,22 @@ The seven inference-path conditions live in `configs/ref_yolo_world/speed/`:
 | `lora_merged_low_margin_fp32.py` | ✓ | ✓ | ✓ (FP16 forward, FP32 rerun near the decision boundary) |
 | `lora_merged_full_fp32.py` | ✓ | ✓ | ✓ (FP32 everywhere) |
 
-Measure one condition:
+Stream inference reuses the cached text-side quantities for every image, while
+Single inference encodes the expression for every image. Measure end-to-end FPS on
+RefCOCOg val with a batch size of one, using
+`text_cache_attention_reparameterization_cached.py` for Stream and
+`attention_reparameterization_uncached.py` for Single:
 
 ```bash
 python3 tools/speed/reliable_speed_measure.py \
-  --label text_cache_attention_reparameterization_cached \
+  --label ref_yolo_world_stream \
   --config configs/ref_yolo_world/speed/text_cache_attention_reparameterization_cached.py \
   --checkpoint weights/ref_yolo_world_x_multidataset.pth \
-  --ann-file data/refcoco/refcocog/validation.json \
-  --output results/speed/text_cache_attention_reparameterization_cached.json
+  --measure all --repeat 3 \
+  --output results/speed/ref_yolo_world_stream.json
 ```
+
+Pass another config from the table to measure the other conditions.
 
 Per-stage breakdown (backbone / neck / head / text encoder):
 

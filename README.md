@@ -74,25 +74,8 @@ CUDA_VISIBLE_DEVICES=0,1 ./tools/dist_test.sh \
   2
 ```
 
-Training, the other benchmarks, and the ablations are described in
-[docs/reproduce.md](docs/reproduce.md).
-
-## ⚡ Inference speed
-
-Measure end-to-end FPS on RefCOCOg val with a batch size of one:
-
-```bash
-python3 tools/speed/reliable_speed_measure.py \
-  --label ref_yolo_world_stream \
-  --config configs/ref_yolo_world/speed/text_cache_attention_reparameterization_cached.py \
-  --checkpoint weights/ref_yolo_world_x_multidataset.pth \
-  --measure all --repeat 3 \
-  --output results/speed/ref_yolo_world_stream.json
-```
-
-This config measures Stream inference, which reuses the cached text-side quantities.
-For Single inference, which encodes the expression for every image, use `configs/ref_yolo_world/speed/attention_reparameterization_uncached.py`.
-Other inference-path conditions are listed in [docs/reproduce.md](docs/reproduce.md#inference-speed).
+Training, the other benchmarks, inference speed, and the ablations are described
+in [docs/reproduce.md](docs/reproduce.md).
 
 ## Acknowledgement
 
