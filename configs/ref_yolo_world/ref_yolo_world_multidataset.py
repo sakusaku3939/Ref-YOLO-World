@@ -1,10 +1,11 @@
 # Default Ref-YOLO-World: multi-dataset + spatial flip with CLIP text LoRA.
-# It starts from the 78.97% no-LoRA checkpoint and adds only
-# zero-init LoRA adapters to the frozen CLIP text encoder.
+# Stage 2 of training: it starts from the stage-1 (no-LoRA) checkpoint and
+# adds only zero-init LoRA adapters to the frozen CLIP text encoder.
 
 _base_ = './ref_yolo_world_multidataset_no_lora.py'
 standard_evaluation_checkpoint = (
     'weights/ref_yolo_world_x_multidataset.pth')
+load_from = 'weights/ref_yolo_world_x_multidataset_no_lora.pth'
 
 custom_imports = dict(
     imports=[

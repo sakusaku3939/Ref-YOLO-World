@@ -1,23 +1,36 @@
 # Training and evaluation
 
-Every command assumes the repository root as working directory and the layout
-described in [data.md](data.md). Two L40S GPUs were used for all reported
-numbers.
+Run every command from the repository root, with the data laid out as described
+in [data.md](data.md). We used two NVIDIA L40S GPUs for all reported numbers.
 
 ## Training
 
-The released model is trained in one run from the YOLO-World v2-X pretrained
-weights (20 epochs, best checkpoint at epoch 10):
+We trained the released model in two stages.
+
+**Stage 1.** Train every Ref-YOLO-World component except the text LoRA for 20
+epochs, starting from the YOLO-World v2-X pretrained weights:
+
+```bash
+CUDA_VISIBLE_DEVICES=0,1 ./tools/dist_train.sh \
+  configs/ref_yolo_world/ref_yolo_world_multidataset_no_lora.py \
+  2 --amp
+```
+
+Copy the best of the 20 checkpoints to
+`weights/ref_yolo_world_x_multidataset_no_lora.pth`.
+
+**Stage 2.** Add zero-initialized LoRA adapters to the CLIP text encoder and
+train for another 20 epochs from the stage-1 checkpoint. We released the best
+checkpoint of this stage, from epoch 10:
 
 ```bash
 CUDA_VISIBLE_DEVICES=0,1 ./tools/dist_train.sh \
   configs/ref_yolo_world/ref_yolo_world_multidataset.py \
-  2 --amp \
-  --cfg-options load_from=weights/yolo_world_v2_x_obj365v1_goldg_cc3mlite_pretrain_1280ft-14996a36.pth
+  2 --amp
 ```
 
-The intermediate configs train the same model with fewer components and are the
-module ablation of the method:
+The configs below train the same model with fewer components. They form the
+module ablation:
 
 | Config | Neck | Spatial PE | Contrastive head | Text LoRA | Train data |
 | --- | :-: | :-: | :-: | :-: | --- |
@@ -110,8 +123,8 @@ python3 tools/speed/measure_ref_yoloworld_params.py \
 
 ## Equivalence checks
 
-Attention reparameterization is an exact algebraic rewrite of the cross
-attention. The following two checks assert that it does not change the logits:
+Attention reparameterization rewrites the cross attention in an algebraically
+equivalent form. These two scripts check that it leaves the logits unchanged:
 
 ```bash
 python3 tools/eval/attention_reparameterization_equivalence.py \
