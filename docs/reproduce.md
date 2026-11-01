@@ -177,6 +177,19 @@ python3 tools/export/convert_ref_yoloworld_coreml.py \
 Use `--image-input` for RGB image input or `--compute-precision fp32` for FP32
 compute. On macOS, the script also compares the outputs with ONNX Runtime.
 
+To encode expressions on-device as well, convert the CLIP text encoder with the
+merged text LoRA (see [data.md](data.md#text-feature-cache) for
+`merge_text_lora.py`). The script checks its outputs against the text-feature
+cache before conversion:
+
+```bash
+python3 tools/export/convert_ref_yoloworld_text_encoder_coreml.py \
+  --checkpoint weights/ref_yolo_world_x_lora_merged.pth \
+  --cache results/text_cache/refcocog_val_text_features.pt \
+  --output work_dirs/export/ref_yolo_world_text_encoder_fp16.mlpackage \
+  --tokenizer-output work_dirs/export/tokenizer
+```
+
 ### TFLite
 
 Export the ONNX model with `--tflite-strip-cls-score-where` (a workaround for an
