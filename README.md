@@ -4,6 +4,7 @@
 
 **Decoupling Text-Side Computation for Efficient Referring Expression Comprehension on Edge Devices**
 
+[![Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Models-yellow)](https://huggingface.co/sakusaku3939/Ref-YOLO-World)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
 
 </div>
@@ -53,14 +54,12 @@ lightweight modules:
 
 ## 📦 Checkpoints
 
-Download the files into `weights/` and `results/text_cache/`; see
-[docs/data.md](docs/data.md) for the expected layout.
+Download the checkpoints into `weights/`.
 
-| File | Description | Download |
+| Model | Config | Download |
 | --- | --- | --- |
-| `yolo_world_v2_x_obj365v1_goldg_cc3mlite_pretrain_1280ft-14996a36.pth` | YOLO-World v2-X pretrained weights, the starting point of every training run. | [download link](https://huggingface.co/wondervictor/YOLO-World/resolve/main/yolo_world_v2_x_obj365v1_goldg_cc3mlite_pretrain_1280ft-14996a36.pth) |
-| `ref_yolo_world_x_multidataset.pth` | Released Ref-YOLO-World model. | [download link](https://www.dropbox.com/scl/fi/1inbg1m9h68l5q7r8ljf1/ref_yolo_world_x_multidataset.pth?rlkey=s9927hooz33ut9qcwkrsxdafu&dl=1) |
-| `refcocog_val_text_features.pt` | Text-feature cache for the cached inference path. | [download link](https://www.dropbox.com/scl/fi/bnsu886ssf4jv911cr8dt/refcocog_val_text_features.pt?rlkey=ip6oc7q9vz99kuet9dr4lbdkv&dl=1) |
+| Ref-YOLO-World | [config](configs/ref_yolo_world/ref_yolo_world_multidataset.py) | [🤗 Download link](https://huggingface.co/sakusaku3939/Ref-YOLO-World/resolve/main/ref_yolo_world_x_multidataset.pth) |
+| YOLO-World v2-X (pretrained, for training) | – | [🤗 Download link](https://huggingface.co/wondervictor/YOLO-World/resolve/main/yolo_world_v2_x_obj365v1_goldg_cc3mlite_pretrain_1280ft-14996a36.pth) |
 
 ## 🚀 Demo
 

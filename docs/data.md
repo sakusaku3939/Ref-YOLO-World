@@ -114,7 +114,12 @@ CUDA_VISIBLE_DEVICES=0,1 ./tools/dist_test.sh \
 ## Weights
 
 Download the required checkpoints listed in the
-[README Checkpoints section](../README.md#-checkpoints) into `weights/`.
+[README Checkpoints section](../README.md#-checkpoints) into `weights/`. The
+released model is also available with the Hugging Face CLI:
+
+```bash
+hf download sakusaku3939/Ref-YOLO-World ref_yolo_world_x_multidataset.pth --local-dir weights
+```
 
 If you start from a plain YOLO-World checkpoint, convert it to the
 Ref-YOLO-World parameter layout first:
@@ -129,7 +134,14 @@ python3 tools/convert/convert_yolo_to_ref_checkpoint.py \
 ## Text feature cache
 
 The cached inference path needs the CLIP text features of every evaluation
-expression:
+expression. Download the cache for RefCOCOg val
+([🤗 Download link](https://huggingface.co/sakusaku3939/Ref-YOLO-World/resolve/main/refcocog_val_text_features.pt)):
+
+```bash
+hf download sakusaku3939/Ref-YOLO-World refcocog_val_text_features.pt --local-dir results/text_cache
+```
+
+Or build it yourself:
 
 ```bash
 python3 tools/convert/build_text_feature_cache.py \
