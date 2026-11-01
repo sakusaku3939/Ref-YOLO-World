@@ -46,4 +46,5 @@ pip install --no-build-isolation -e .
 pip install -r requirements/basic_requirements.txt
 ```
 
-ONNX export additionally needs `requirements/onnx_requirements.txt`.
+ONNX export additionally needs `requirements/onnx_requirements.txt`. Core ML
+conversion also needs `requirements/mobile_requirements.txt`.

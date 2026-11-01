@@ -142,6 +142,11 @@ python3 tools/eval/reparam_cache_equivalence.py \
 
 ## Export
 
+The exported models take the cached text-side tensors as inputs and run only
+the per-frame detector.
+
+### ONNX
+
 ```bash
 python3 tools/export/export_ref_yoloworld_text_cache_onnx.py \
   configs/ref_yolo_world/speed/text_cache_attention_reparameterization_cached.py \
@@ -155,6 +160,21 @@ python3 tools/export/eval_ref_yoloworld_onnx_bbox_acc.py \
   --ann-file data/refcoco/refcocog/validation.json \
   --output results/export/ref_yolo_world_onnx_bbox_acc.json
 ```
+
+### Core ML
+
+Convert the ONNX model to a Core ML ML Program with FP16 compute:
+
+```bash
+python3 tools/export/convert_ref_yoloworld_coreml.py \
+  --onnx work_dirs/export/ref_yolo_world.onnx \
+  --output work_dirs/export/ref_yolo_world_fp16.mlpackage \
+  --report work_dirs/export/ref_yolo_world_fp16.coreml.json
+```
+
+Add `--image-input` to take an RGB image instead of a normalized tensor, or
+`--compute-precision fp32` for FP32 compute. On macOS, the script also checks
+the Core ML outputs against ONNX Runtime and writes the errors to the report.
 
 ## Ablations
 
