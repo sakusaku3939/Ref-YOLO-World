@@ -106,11 +106,12 @@ in [docs/reproduce.md](docs/reproduce.md).
 ## 📖 Citation
 
 ```bibtex
-@article{aoki2026refyoloworld,
-  title   = {Ref-YOLO-World: Decoupling Text-Side Computation for Efficient Referring Expression Comprehension on Edge Devices},
-  author  = {Aoki, Yuki and Bekku, Hiroo and Okoshi, Tadashi and Nakazawa, Jin},
-  journal = {arXiv preprint arXiv:2611.27756},
-  year    = {2026}
+@inproceedings{aoki2027refyoloworld,
+  title     = {{Ref-YOLO-World}: Decoupling Text-Side Computation for Efficient Referring Expression Comprehension on Edge Devices},
+  author    = {Aoki, Yuki and Bekku, Hiroo and Okoshi, Tadashi and Nakazawa, Jin},
+  booktitle = {Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision (WACV)},
+  year      = {2027},
+  url       = {https://arxiv.org/abs/2611.27756}
 }
 ```
 
