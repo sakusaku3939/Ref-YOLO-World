@@ -6,6 +6,7 @@
 
 [Yuki Aoki](https://sakusaku3939.com/), [Hiroo Bekku](https://bekkuzer.com/), [Tadashi Okoshi](https://www.okoshi.org/), [Jin Nakazawa](https://scholar.google.com/citations?user=Lj6r908AAAAJ)
 
+[![arXiv](https://img.shields.io/badge/arXiv-2611.27756-b31b1b.svg)](https://arxiv.org/abs/2611.27756)
 [![Demo](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Demo-orange)](https://huggingface.co/spaces/sakusaku3939/Ref-YOLO-World)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
 
@@ -22,6 +23,7 @@ runs at 15.73 FPS on an iPhone 15 Pro.
 
 ## 🔥 News
 
+- `[2026-11-20]` Our paper is now available on [arXiv](https://arxiv.org/abs/2611.27756).
 - `[2026-11-02]` We released a [demo](https://huggingface.co/spaces/sakusaku3939/Ref-YOLO-World) on 🤗 Hugging Face Spaces that runs entirely in the browser.
 - `[2026-11-01]` We released the code and model weights of Ref-YOLO-World.
 
@@ -100,6 +102,17 @@ python3 demo/ref_demo.py \
 
 Training, the other benchmarks, inference speed, and the ablations are described
 in [docs/reproduce.md](docs/reproduce.md).
+
+## 📖 Citation
+
+```bibtex
+@article{aoki2026refyoloworld,
+  title   = {Ref-YOLO-World: Decoupling Text-Side Computation for Efficient Referring Expression Comprehension on Edge Devices},
+  author  = {Aoki, Yuki and Bekku, Hiroo and Okoshi, Tadashi and Nakazawa, Jin},
+  journal = {arXiv preprint arXiv:2611.27756},
+  year    = {2026}
+}
+```
 
 ## Acknowledgement
 
