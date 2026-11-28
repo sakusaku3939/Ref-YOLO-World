@@ -6,7 +6,6 @@
 
 [Yuki Aoki](https://sakusaku3939.com/), [Hiroo Bekku](https://bekkuzer.com/), [Tadashi Okoshi](https://www.okoshi.org/), [Jin Nakazawa](https://scholar.google.com/citations?user=Lj6r908AAAAJ)
 
-[![WACV 2027](https://img.shields.io/badge/WACV-2027-4b44ce.svg)](https://wacv.thecvf.com/Conferences/2027/AcceptedPapers)
 [![arXiv](https://img.shields.io/badge/arXiv-2611.27756-b31b1b.svg)](https://arxiv.org/abs/2611.27756)
 [![Demo](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Demo-orange)](https://huggingface.co/spaces/sakusaku3939/Ref-YOLO-World)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
